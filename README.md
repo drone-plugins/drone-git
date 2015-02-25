@@ -63,3 +63,27 @@ Clone a tag
 }
 EOF
 ```
+
+## Docker
+
+Build the Docker container:
+
+```sh
+docker build -t drone/drone-clone-git .
+```
+
+Clone a repository inside the Docker container:
+
+```sh
+docker run -i drone/drone-clone-git <<EOF
+{
+	"clone" : {
+		"branch": "master",
+		"remote": "git://github.com/drone/drone",
+		"dir": "/tmp/drone",
+		"ref": "refs/heads/master",
+		"sha": "436b7a6e2abaddfd35740527353e78a227ddcb2c"
+	}
+}
+EOF
+```
