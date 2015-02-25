@@ -35,15 +35,17 @@ EOF
 Clone a pull request
 
 ```sh
+./drone-clone-git <<EOF
 {
 	"clone" : {
 		"branch": "master",
 		"remote": "git://github.com/drone/drone",
 		"dir": "/tmp/drone",
-		"ref": "refs/pull/877/merge",
+		"ref": "refs/pull/892/merge",
 		"sha": "8d6a233744a5dcacbf2605d4592a4bfe8b37320d"
 	}
 }
+EOF
 ```
 
 Clone a tag

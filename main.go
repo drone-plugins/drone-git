@@ -5,25 +5,29 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/drone/drone-plugin-go/plugin"
 )
 
 func main() {
-	in := ParseMust()
+	c := new(plugin.Clone)
+	plugin.Param("clone", c)
+	plugin.Parse()
 
-	os.MkdirAll(in.Clone.Dir, 0700)
+	os.MkdirAll(c.Dir, 0700)
 
 	var cmds []*exec.Cmd
-	if isPR(in) || isTag(in) {
-		cmds = append(cmds, clone(in))
-		cmds = append(cmds, fetch(in))
-		cmds = append(cmds, checkoutHead(in))
+	if isPR(c) || isTag(c) {
+		cmds = append(cmds, clone(c))
+		cmds = append(cmds, fetch(c))
+		cmds = append(cmds, checkoutHead(c))
 	} else {
-		cmds = append(cmds, cloneBranch(in))
-		cmds = append(cmds, checkoutSha(in))
+		cmds = append(cmds, cloneBranch(c))
+		cmds = append(cmds, checkoutSha(c))
 	}
 
 	for _, cmd := range cmds {
-		cmd.Dir = in.Clone.Dir
+		cmd.Dir = c.Dir
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		trace(cmd)
@@ -35,54 +39,53 @@ func main() {
 }
 
 // Returns true if cloning a pull request.
-func isPR(in Input) bool {
-	return strings.HasPrefix(in.Clone.Ref, "refs/pull/")
+func isPR(in *plugin.Clone) bool {
+	return strings.HasPrefix(in.Ref, "refs/pull/")
 }
 
-func isTag(in Input) bool {
-	return strings.HasPrefix(in.Clone.Ref, "refs/tags/")
+func isTag(in *plugin.Clone) bool {
+	return strings.HasPrefix(in.Ref, "refs/tags/")
 }
 
 // Clone executes a git clone command.
-func clone(in Input) *exec.Cmd {
+func clone(c *plugin.Clone) *exec.Cmd {
 	return exec.Command(
 		"git",
 		"clone",
 		"--depth=50",
 		"--recursive",
-		in.Clone.Remote,
-		in.Clone.Dir,
+		c.Remote,
+		c.Dir,
 	)
 }
 
 // CloneBranch executes a git clone command
 // for a single branch.
-func cloneBranch(in Input) *exec.Cmd {
-	//branch := fmt.Sprintf("--branch=%s", in.Clone.Branch)
+func cloneBranch(c *plugin.Clone) *exec.Cmd {
 	return exec.Command(
 		"git",
 		"clone",
 		"-b",
-		in.Clone.Branch,
+		c.Branch,
 		"--depth=50",
 		"--recursive",
-		in.Clone.Remote,
-		in.Clone.Dir,
+		c.Remote,
+		c.Dir,
 	)
 }
 
 // Checkout executes a git checkout command.
-func checkoutSha(in Input) *exec.Cmd {
+func checkoutSha(c *plugin.Clone) *exec.Cmd {
 	return exec.Command(
 		"git",
 		"checkout",
 		"-qf",
-		in.Clone.Sha,
+		c.Sha,
 	)
 }
 
 // Checkout executes a git checkout command.
-func checkoutHead(in Input) *exec.Cmd {
+func checkoutHead(c *plugin.Clone) *exec.Cmd {
 	return exec.Command(
 		"git",
 		"checkout",
@@ -92,12 +95,12 @@ func checkoutHead(in Input) *exec.Cmd {
 }
 
 // Fetch executes a git fetch to origin.
-func fetch(in Input) *exec.Cmd {
+func fetch(c *plugin.Clone) *exec.Cmd {
 	return exec.Command(
 		"git",
 		"fetch",
 		"origin",
-		fmt.Sprintf("+%s:", in.Clone.Ref),
+		fmt.Sprintf("+%s:", c.Ref),
 	)
 }
 
