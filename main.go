@@ -14,7 +14,11 @@ func main() {
 	plugin.Param("clone", c)
 	plugin.Parse()
 
-	os.MkdirAll(c.Dir, 0700)
+	err := os.MkdirAll(c.Dir, 0777)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 
 	var cmds []*exec.Cmd
 	if isPR(c) || isTag(c) {
