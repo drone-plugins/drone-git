@@ -2,7 +2,7 @@
 #
 #     docker build -t drone/drone-clone-git .
 
-FROM library/golang:1.4-onbuild
+FROM library/golang:1.4
 
 # copy the local package files to the container's workspace.
 ADD . /go/src/github.com/drone/drone-clone-git/
