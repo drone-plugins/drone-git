@@ -1,6 +1,6 @@
 # Docker image for Drone's git-clone plugin
 #
-#     docker build -t drone-plugins/drone-git .
+#     docker build --rm=true -t plugins/drone-git .
 
 FROM library/golang:1.4
 

@@ -60,7 +60,7 @@ EOF
 Build the Docker container:
 
 ```sh
-docker build -t plugins/drone-git .
+docker build --rm=true -t plugins/drone-git .
 ```
 
 Clone a repository inside the Docker container:
