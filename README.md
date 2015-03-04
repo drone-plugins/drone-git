@@ -8,7 +8,7 @@ make deps
 make build
 ```
 
-Creates Docker image `drone/drone-clone-git`
+Creates Docker image `plugins/drone-git`
 
 ```sh
 sudo make docker
@@ -19,7 +19,7 @@ sudo make docker
 Clone a commit
 
 ```sh
-./drone-clone-git <<EOF
+./drone-git <<EOF
 {
 	"clone" : {
 		"branch": "master",
@@ -35,7 +35,7 @@ EOF
 Clone a pull request
 
 ```sh
-./drone-clone-git <<EOF
+./drone-git <<EOF
 {
 	"clone" : {
 		"branch": "master",
@@ -51,7 +51,7 @@ EOF
 Clone a tag
 
 ```sh
-./drone-clone-git <<EOF
+./drone-git <<EOF
 {
 	"clone" : {
 		"branch": "master",
@@ -69,13 +69,13 @@ EOF
 Build the Docker container:
 
 ```sh
-docker build -t drone/drone-clone-git .
+docker build -t plugins/drone-git .
 ```
 
 Clone a repository inside the Docker container:
 
 ```sh
-docker run -i drone/drone-clone-git <<EOF
+docker run -i plugins/drone-git <<EOF
 {
 	"clone" : {
 		"branch": "master",
