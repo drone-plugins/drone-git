@@ -1,18 +1,9 @@
+# drone-git
+Drone plugin for cloning git repositories.
 
-## Build
+## Overview
 
-Build the project
-
-```sh
-make deps
-make build
-```
-
-Creates Docker image `plugins/drone-git`
-
-```sh
-sudo make docker
-```
+This plugin is responsible for cloning `git` repositories. It is capable of cloning a specific commit, branch, tag or pull request. The clone path is provided in the `dir` field.
 
 ## Usage
 
