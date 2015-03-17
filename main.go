@@ -35,6 +35,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	// write the rsa private key if provided
+	if err := writeKey(c); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
 	var cmds []*exec.Cmd
 	if isPR(c) || isTag(c) {
 		cmds = append(cmds, clone(c))
@@ -55,25 +61,6 @@ func main() {
 			os.Exit(1)
 		}
 	}
-}
-
-// Returns the formatted netrc file.
-func writeNetrc(in *plugin.Clone) error {
-	if len(in.Netrc.Machine) == 0 {
-		return nil
-	}
-	out := fmt.Sprintf(
-		netrcFile,
-		in.Netrc.Machine,
-		in.Netrc.Login,
-		in.Netrc.Password,
-	)
-	u, err := user.Current()
-	if err != nil {
-		return err
-	}
-	path := filepath.Join(u.HomeDir, ".netrc")
-	return ioutil.WriteFile(path, []byte(out), 0600)
 }
 
 // Returns true if cloning a pull request.
@@ -146,4 +133,42 @@ func fetch(c *plugin.Clone) *exec.Cmd {
 // is executed. Used for debugging your build.
 func trace(cmd *exec.Cmd) {
 	fmt.Println("$", strings.Join(cmd.Args, " "))
+}
+
+// Writes the netrc file.
+func writeNetrc(in *plugin.Clone) error {
+	if len(in.Netrc.Machine) == 0 {
+		return nil
+	}
+	out := fmt.Sprintf(
+		netrcFile,
+		in.Netrc.Machine,
+		in.Netrc.Login,
+		in.Netrc.Password,
+	)
+	u, err := user.Current()
+	if err != nil {
+		return err
+	}
+	path := filepath.Join(u.HomeDir, ".netrc")
+	return ioutil.WriteFile(path, []byte(out), 0600)
+}
+
+// Writes the RSA private key
+func writeKey(in *plugin.Clone) error {
+	if len(in.Keypair.Private) == 0 {
+		return nil
+	}
+	u, err := user.Current()
+	if err != nil {
+		return err
+	}
+	sshpath := filepath.Join(u.HomeDir, ".ssh")
+	if err := os.MkdirAll(sshpath, 0700); err != nil {
+		return err
+	}
+	confpath := filepath.Join(sshpath, "config")
+	privpath := filepath.Join(sshpath, "id_rsa")
+	ioutil.WriteFile(confpath, []byte("StrictHostKeyChecking no\n"), 0700)
+	return ioutil.WriteFile(privpath, []byte(in.Keypair.Private), 0600)
 }
