@@ -2,12 +2,21 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
+	"os/user"
+	"path/filepath"
 	"strings"
 
 	"github.com/drone/drone-plugin-go/plugin"
 )
+
+var netrcFile = `
+machine %s
+login %s
+password %s
+`
 
 func main() {
 	c := new(plugin.Clone)
@@ -16,6 +25,12 @@ func main() {
 
 	err := os.MkdirAll(c.Dir, 0777)
 	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	// generate the .netrc file
+	if err := writeNetrc(c); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
@@ -40,6 +55,25 @@ func main() {
 			os.Exit(1)
 		}
 	}
+}
+
+// Returns the formatted netrc file.
+func writeNetrc(in *plugin.Clone) error {
+	if len(in.Netrc.Machine) == 0 {
+		return nil
+	}
+	out := fmt.Sprintf(
+		netrcFile,
+		in.Netrc.Machine,
+		in.Netrc.Login,
+		in.Netrc.Password,
+	)
+	u, err := user.Current()
+	if err != nil {
+		return err
+	}
+	path := filepath.Join(u.HomeDir, ".netrc")
+	return ioutil.WriteFile(path, []byte(out), 0600)
 }
 
 // Returns true if cloning a pull request.
