@@ -2,12 +2,21 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
+	"os/user"
+	"path/filepath"
 	"strings"
 
 	"github.com/drone/drone-plugin-go/plugin"
 )
+
+var netrcFile = `
+machine %s
+login %s
+password %s
+`
 
 func main() {
 	c := new(plugin.Clone)
@@ -20,6 +29,18 @@ func main() {
 
 	err := os.MkdirAll(c.Dir, 0777)
 	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	// generate the .netrc file
+	if err := writeNetrc(c); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	// write the rsa private key if provided
+	if err := writeKey(c); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
@@ -116,4 +137,42 @@ func fetch(c *plugin.Clone) *exec.Cmd {
 // is executed. Used for debugging your build.
 func trace(cmd *exec.Cmd) {
 	fmt.Println("$", strings.Join(cmd.Args, " "))
+}
+
+// Writes the netrc file.
+func writeNetrc(in *plugin.Clone) error {
+	if len(in.Netrc.Machine) == 0 {
+		return nil
+	}
+	out := fmt.Sprintf(
+		netrcFile,
+		in.Netrc.Machine,
+		in.Netrc.Login,
+		in.Netrc.Password,
+	)
+	u, err := user.Current()
+	if err != nil {
+		return err
+	}
+	path := filepath.Join(u.HomeDir, ".netrc")
+	return ioutil.WriteFile(path, []byte(out), 0600)
+}
+
+// Writes the RSA private key
+func writeKey(in *plugin.Clone) error {
+	if len(in.Keypair.Private) == 0 {
+		return nil
+	}
+	u, err := user.Current()
+	if err != nil {
+		return err
+	}
+	sshpath := filepath.Join(u.HomeDir, ".ssh")
+	if err := os.MkdirAll(sshpath, 0700); err != nil {
+		return err
+	}
+	confpath := filepath.Join(sshpath, "config")
+	privpath := filepath.Join(sshpath, "id_rsa")
+	ioutil.WriteFile(confpath, []byte("StrictHostKeyChecking no\n"), 0700)
+	return ioutil.WriteFile(privpath, []byte(in.Keypair.Private), 0600)
 }
