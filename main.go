@@ -11,7 +11,11 @@ import (
 
 func main() {
 	c := new(plugin.Clone)
+	r := new(plugin.Repo)
+	b := new(plugin.Build)
 	plugin.Param("clone", c)
+	plugin.Param("repo", r)
+	plugin.Param("build", b)
 	plugin.Parse()
 
 	err := os.MkdirAll(c.Dir, 0777)
@@ -21,7 +25,7 @@ func main() {
 	}
 
 	var cmds []*exec.Cmd
-	if isPR(c) || isTag(c) {
+	if isPR(c) {
 		cmds = append(cmds, clone(c))
 		cmds = append(cmds, fetch(c))
 		cmds = append(cmds, checkoutHead(c))
@@ -43,37 +47,37 @@ func main() {
 }
 
 // Returns true if cloning a pull request.
-func isPR(in *plugin.Clone) bool {
-	return strings.HasPrefix(in.Ref, "refs/pull/")
+func isPR(b *plugin.Build) bool {
+	return b.PullRequest.Number == 0
 }
 
-func isTag(in *plugin.Clone) bool {
-	return strings.HasPrefix(in.Ref, "refs/tags/")
+func isTag(b *plugin.Build) bool {
+	return strings.HasPrefix(b.Commit.Ref, "refs/tags/")
 }
 
 // Clone executes a git clone command.
-func clone(c *plugin.Clone) *exec.Cmd {
+func clone(c *plugin.Clone, b *plugin.Build) *exec.Cmd {
 	return exec.Command(
 		"git",
 		"clone",
 		"--depth=50",
 		"--recursive",
-		c.Remote,
+		b.Commit.Remote.Clone,
 		c.Dir,
 	)
 }
 
 // CloneBranch executes a git clone command
 // for a single branch.
-func cloneBranch(c *plugin.Clone) *exec.Cmd {
+func cloneBranch(c *plugin.Clone, b *plugin.Build) *exec.Cmd {
 	return exec.Command(
 		"git",
 		"clone",
 		"-b",
-		c.Branch,
+		b.Commit.Ref,
 		"--depth=50",
 		"--recursive",
-		c.Remote,
+		b.Commit.Remote.Clone,
 		c.Dir,
 	)
 }
