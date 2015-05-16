@@ -1,0 +1,10 @@
+plugin:
+  name: Git
+  desc: Clones a git repository.
+  type: clone
+  image: plugins/drone-git
+  labels:
+    - scm
+    - vcs
+    - git
+

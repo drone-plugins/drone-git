@@ -25,6 +25,8 @@ func main() {
 	}{}
 
 	c := new(plugin.Clone)
+	b := new(plugin.Commit)
+	plugin.Param("commit", b)
 	plugin.Param("clone", c)
 	plugin.Param("vargs", v)
 	plugin.Parse()
@@ -55,7 +57,7 @@ func main() {
 	}
 
 	var cmds []*exec.Cmd
-	if isPR(c) || isTag(c) {
+	if isPR(b) {
 		cmds = append(cmds, clone(c))
 		cmds = append(cmds, fetch(c))
 		cmds = append(cmds, checkoutHead(c))
@@ -77,12 +79,12 @@ func main() {
 }
 
 // Returns true if cloning a pull request.
-func isPR(in *plugin.Clone) bool {
-	return strings.HasPrefix(in.Ref, "refs/pull/")
+func isPR(b *plugin.Commit) bool {
+	return b.PullRequest != ""
 }
 
-func isTag(in *plugin.Clone) bool {
-	return strings.HasPrefix(in.Ref, "refs/tags/")
+func isTag(c *plugin.Clone) bool {
+	return strings.HasPrefix(c.Ref, "refs/tags/")
 }
 
 // Clone executes a git clone command.
@@ -92,7 +94,7 @@ func clone(c *plugin.Clone) *exec.Cmd {
 		"clone",
 		"--depth=50",
 		"--recursive",
-		c.Remote,
+		c.Origin,
 		c.Dir,
 	)
 }
@@ -104,10 +106,10 @@ func cloneBranch(c *plugin.Clone) *exec.Cmd {
 		"git",
 		"clone",
 		"-b",
-		c.Branch,
+		c.Ref,
 		"--depth=50",
 		"--recursive",
-		c.Remote,
+		c.Origin,
 		c.Dir,
 	)
 }
