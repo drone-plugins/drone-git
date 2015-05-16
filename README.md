@@ -61,7 +61,7 @@ Build the Docker container using the `netgo` build tag to eliminate
 the CGO dependency:
 
 ```sh
-go build -a -tags netgo
+CGO_ENABLED=0 go build -a -tags netgo
 docker build --rm=true -t plugins/drone-git .
 ```
 
@@ -72,7 +72,8 @@ docker run -i plugins/drone-git <<EOF
 {
 	"clone" : {
 		"branch": "master",
-		"remote": "git://github.com/drone/drone",
+		"origin": "git://github.com/drone/drone.git",
+		"remote": "git://github.com/drone/drone.git",
 		"dir": "/drone/src/github.com/drone/drone",
 		"ref": "refs/heads/master",
 		"sha": "436b7a6e2abaddfd35740527353e78a227ddcb2c"

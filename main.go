@@ -25,11 +25,12 @@ func main() {
 	}{}
 
 	c := new(plugin.Clone)
-	b := new(plugin.Commit)
-	plugin.Param("commit", b)
 	plugin.Param("clone", c)
 	plugin.Param("vargs", v)
-	plugin.Parse()
+	if err := plugin.Parse(); err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
 
 	if v.Depth == 0 {
 		v.Depth = 50
@@ -40,24 +41,24 @@ func main() {
 
 	err := os.MkdirAll(c.Dir, 0777)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		fmt.Printf("Error creating directory %s. %s\n", c.Dir, err)
+		os.Exit(2)
 	}
 
 	// generate the .netrc file
 	if err := writeNetrc(c); err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		os.Exit(3)
 	}
 
 	// write the rsa private key if provided
 	if err := writeKey(c); err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		os.Exit(4)
 	}
 
 	var cmds []*exec.Cmd
-	if isPR(b) {
+	if isPR(c) {
 		cmds = append(cmds, clone(c))
 		cmds = append(cmds, fetch(c))
 		cmds = append(cmds, checkoutHead(c))
@@ -79,8 +80,8 @@ func main() {
 }
 
 // Returns true if cloning a pull request.
-func isPR(b *plugin.Commit) bool {
-	return b.PullRequest != ""
+func isPR(c *plugin.Clone) bool {
+	return strings.HasPrefix(c.Ref, "refs/pull/")
 }
 
 func isTag(c *plugin.Clone) bool {
@@ -106,7 +107,7 @@ func cloneBranch(c *plugin.Clone) *exec.Cmd {
 		"git",
 		"clone",
 		"-b",
-		c.Ref,
+		c.Branch,
 		"--depth=50",
 		"--recursive",
 		c.Origin,
