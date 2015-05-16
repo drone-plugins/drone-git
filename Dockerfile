@@ -1,6 +1,6 @@
 # Docker image for Drone's git-clone plugin
 #
-#     go build -a -tags netgo
+#     CGO_ENABLED=0 go build -a -tags netgo
 #     docker build --rm=true -t plugins/drone-git .
 
 FROM gliderlabs/alpine:3.1

@@ -162,11 +162,12 @@ func writeNetrc(in *plugin.Clone) error {
 		in.Netrc.Login,
 		in.Netrc.Password,
 	)
+	home := "/root"
 	u, err := user.Current()
-	if err != nil {
-		return err
+	if err == nil {
+		home = u.HomeDir
 	}
-	path := filepath.Join(u.HomeDir, ".netrc")
+	path := filepath.Join(home, ".netrc")
 	return ioutil.WriteFile(path, []byte(out), 0600)
 }
 
@@ -175,16 +176,17 @@ func writeKey(in *plugin.Clone) error {
 	if len(in.Keypair.Private) == 0 {
 		return nil
 	}
+	home := "/root"
 	u, err := user.Current()
-	if err != nil {
-		return err
+	if err == nil {
+		home = u.HomeDir
 	}
-	sshpath := filepath.Join(u.HomeDir, ".ssh")
+	sshpath := filepath.Join(home, ".ssh")
 	if err := os.MkdirAll(sshpath, 0700); err != nil {
 		return err
 	}
 	confpath := filepath.Join(sshpath, "config")
 	privpath := filepath.Join(sshpath, "id_rsa")
 	ioutil.WriteFile(confpath, []byte("StrictHostKeyChecking no\n"), 0700)
-	return ioutil.WriteFile(privpath, []byte(in.Keypair.Private), 0600)
+	return ioutil.WriteFile(privpath, in.Keypair.Private, 0600)
 }
