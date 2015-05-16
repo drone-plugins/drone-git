@@ -1,3 +1,21 @@
+build:
+  image: golang:1.4.2
+  environment:
+    - CGO_ENABLED=0
+    - GOPATH=/drone
+  commands:
+    - CGO_ENABLED=0 go build -a -tags netgo
+    - go test
+
+publish:
+  docker:
+    username: $$DOCKER_USER
+    password: $$DOCKER_PASS
+    email: $$DOCKER_EMAIL
+    repo: plugins/drone-git
+    when:
+      branch: master
+
 plugin:
   name: Git
   desc: Clones a git repository.
