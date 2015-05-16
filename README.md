@@ -57,9 +57,11 @@ EOF
 
 ## Docker
 
-Build the Docker container:
+Build the Docker container using the `netgo` build tag to eliminate
+the CGO dependency:
 
 ```sh
+go build -a -tags netgo
 docker build --rm=true -t plugins/drone-git .
 ```
 

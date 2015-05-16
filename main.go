@@ -19,9 +19,22 @@ password %s
 `
 
 func main() {
+	v := struct {
+		Path  string `json:"path"`
+		Depth int    `json:"depth"`
+	}{}
+
 	c := new(plugin.Clone)
 	plugin.Param("clone", c)
+	plugin.Param("vargs", v)
 	plugin.Parse()
+
+	if v.Depth == 0 {
+		v.Depth = 50
+	}
+	if len(v.Path) != 0 {
+		c.Dir = filepath.Join("/drone/src", v.Path)
+	}
 
 	err := os.MkdirAll(c.Dir, 0777)
 	if err != nil {
