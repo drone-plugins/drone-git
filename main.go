@@ -26,7 +26,7 @@ func main() {
 
 	c := new(plugin.Clone)
 	plugin.Param("clone", c)
-	plugin.Param("vargs", v)
+	plugin.Param("vargs", &v)
 	if err := plugin.Parse(); err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
