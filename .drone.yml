@@ -4,6 +4,7 @@ build:
     - CGO_ENABLED=0
     - GOPATH=/drone
   commands:
+    - CGO_ENABLED=0 go get
     - CGO_ENABLED=0 go build -a -tags netgo
     - go test
 
