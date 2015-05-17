@@ -188,5 +188,5 @@ func writeKey(in *plugin.Clone) error {
 	confpath := filepath.Join(sshpath, "config")
 	privpath := filepath.Join(sshpath, "id_rsa")
 	ioutil.WriteFile(confpath, []byte("StrictHostKeyChecking no\n"), 0700)
-	return ioutil.WriteFile(privpath, in.Keypair.Private, 0600)
+	return ioutil.WriteFile(privpath, []byte(in.Keypair.Private), 0600)
 }
