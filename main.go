@@ -60,19 +60,16 @@ func main() {
 
 	var cmds []*exec.Cmd
 	// check for a .git directory and whether it's empty
-  if isDirEmpty(filepath.Join(c.Dir, ".git")) {
+	if isDirEmpty(filepath.Join(c.Dir, ".git")) {
 		cmds = append(cmds, initGit())
 		cmds = append(cmds, remote(c))
 	}
 
-	cmds = append(cmds, fetch(c))
+	cmds = append(cmds, fetch(c, v.Depth))
 
 	if isPR(c) {
-		//cmds = append(cmds, clone(c))
-		//cmds = append(cmds, fetch(c))
 		cmds = append(cmds, checkoutHead(c))
 	} else {
-		//cmds = append(cmds, cloneBranch(c))
 		cmds = append(cmds, checkoutSha(c))
 	}
 
@@ -137,10 +134,11 @@ func checkoutHead(c *plugin.Clone) *exec.Cmd {
 }
 
 // Fetch executes a git fetch to origin.
-func fetch(c *plugin.Clone) *exec.Cmd {
+func fetch(c *plugin.Clone, depth int) *exec.Cmd {
 	return exec.Command(
 		"git",
 		"fetch",
+		fmt.Sprintf("--depth=%d", depth),
 		"origin",
 		fmt.Sprintf("+%s:", c.Ref),
 	)
@@ -195,13 +193,13 @@ func writeKey(in *plugin.Clone) error {
 func isDirEmpty(name string) bool {
 	f, err := os.Open(name)
 	if err != nil {
-		return true;
+		return true
 	}
 	defer f.Close()
 
 	_, err = f.Readdir(1)
 	if err == io.EOF {
-	  return true
+		return true
 	}
 	return false
 }
