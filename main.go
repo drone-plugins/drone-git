@@ -37,7 +37,7 @@ func main() {
 		v.Depth = 50
 	}
 	if len(v.Path) != 0 {
-		c.Dir = filepath.Join("/drone/src", v.Path)
+		c.Dir = v.Path
 	}
 
 	err := os.MkdirAll(c.Dir, 0777)
