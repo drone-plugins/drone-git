@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -36,7 +37,7 @@ func main() {
 		v.Depth = 50
 	}
 	if len(v.Path) != 0 {
-		c.Dir = filepath.Join("/drone/src", v.Path)
+		c.Dir = v.Path
 	}
 
 	err := os.MkdirAll(c.Dir, 0777)
@@ -58,12 +59,17 @@ func main() {
 	}
 
 	var cmds []*exec.Cmd
+	// check for a .git directory and whether it's empty
+	if isDirEmpty(filepath.Join(c.Dir, ".git")) {
+		cmds = append(cmds, initGit())
+		cmds = append(cmds, remote(c))
+	}
+
+	cmds = append(cmds, fetch(c, v.Depth))
+
 	if isPR(c) {
-		cmds = append(cmds, clone(c))
-		cmds = append(cmds, fetch(c))
 		cmds = append(cmds, checkoutHead(c))
 	} else {
-		cmds = append(cmds, cloneBranch(c))
 		cmds = append(cmds, checkoutSha(c))
 	}
 
@@ -88,30 +94,22 @@ func isTag(c *plugin.Clone) bool {
 	return strings.HasPrefix(c.Ref, "refs/tags/")
 }
 
-// Clone executes a git clone command.
-func clone(c *plugin.Clone) *exec.Cmd {
+// Creates an empty git repository.
+func initGit() *exec.Cmd {
 	return exec.Command(
 		"git",
-		"clone",
-		"--depth=50",
-		"--recursive",
-		c.Origin,
-		c.Dir,
+		"init",
 	)
 }
 
-// CloneBranch executes a git clone command
-// for a single branch.
-func cloneBranch(c *plugin.Clone) *exec.Cmd {
+// Sets the remote origin for the repository.
+func remote(c *plugin.Clone) *exec.Cmd {
 	return exec.Command(
 		"git",
-		"clone",
-		"-b",
-		c.Branch,
-		"--depth=50",
-		"--recursive",
+		"remote",
+		"add",
+		"origin",
 		c.Origin,
-		c.Dir,
 	)
 }
 
@@ -136,10 +134,11 @@ func checkoutHead(c *plugin.Clone) *exec.Cmd {
 }
 
 // Fetch executes a git fetch to origin.
-func fetch(c *plugin.Clone) *exec.Cmd {
+func fetch(c *plugin.Clone, depth int) *exec.Cmd {
 	return exec.Command(
 		"git",
 		"fetch",
+		fmt.Sprintf("--depth=%d", depth),
 		"origin",
 		fmt.Sprintf("+%s:", c.Ref),
 	)
@@ -189,4 +188,18 @@ func writeKey(in *plugin.Clone) error {
 	privpath := filepath.Join(sshpath, "id_rsa")
 	ioutil.WriteFile(confpath, []byte("StrictHostKeyChecking no\n"), 0700)
 	return ioutil.WriteFile(privpath, []byte(in.Keypair.Private), 0600)
+}
+
+func isDirEmpty(name string) bool {
+	f, err := os.Open(name)
+	if err != nil {
+		return true
+	}
+	defer f.Close()
+
+	_, err = f.Readdir(1)
+	if err == io.EOF {
+		return true
+	}
+	return false
 }

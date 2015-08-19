@@ -14,6 +14,7 @@ Clone a commit
 {
 	"clone" : {
 		"branch": "master",
+		"origin": "git://github.com/drone/drone",
 		"remote": "git://github.com/drone/drone",
 		"dir": "/drone/src/github.com/drone/drone",
 		"ref": "refs/heads/master",
@@ -30,6 +31,7 @@ Clone a pull request
 {
 	"clone" : {
 		"branch": "master",
+		"origin": "git://github.com/drone/drone",
 		"remote": "git://github.com/drone/drone",
 		"dir": "/drone/src/github.com/drone/drone",
 		"ref": "refs/pull/892/merge",
@@ -46,6 +48,7 @@ Clone a tag
 {
 	"clone" : {
 		"branch": "master",
+		"origin": "git://github.com/drone/drone",
 		"remote": "git://github.com/drone/drone",
 		"dir": "/drone/src/github.com/drone/drone",
 		"sha": "339fb92b9629f63c0e88016fffb865e3e1055483",
