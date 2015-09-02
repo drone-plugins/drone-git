@@ -21,60 +21,57 @@ password %s
 
 func main() {
 	v := struct {
-		Path  string `json:"path"`
-		Depth int    `json:"depth"`
+		Depth int `json:"depth"`
 	}{}
 
-	c := new(plugin.Clone)
-	plugin.Param("clone", c)
+	r := new(plugin.Repo)
+	b := new(plugin.Build)
+	w := new(plugin.Workspace)
+	plugin.Param("repo", r)
+	plugin.Param("build", b)
+	plugin.Param("workspace", w)
 	plugin.Param("vargs", &v)
-	if err := plugin.Parse(); err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
+	plugin.MustParse()
 
 	if v.Depth == 0 {
 		v.Depth = 50
 	}
-	if len(v.Path) != 0 {
-		c.Dir = v.Path
-	}
 
-	err := os.MkdirAll(c.Dir, 0777)
+	err := os.MkdirAll(w.Path, 0777)
 	if err != nil {
-		fmt.Printf("Error creating directory %s. %s\n", c.Dir, err)
+		fmt.Printf("Error creating directory %s. %s\n", w.Path, err)
 		os.Exit(2)
 	}
 
 	// generate the .netrc file
-	if err := writeNetrc(c); err != nil {
+	if err := writeNetrc(w); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(3)
 	}
 
 	// write the rsa private key if provided
-	if err := writeKey(c); err != nil {
+	if err := writeKey(w); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(4)
 	}
 
 	var cmds []*exec.Cmd
 	// check for a .git directory and whether it's empty
-	if isDirEmpty(filepath.Join(c.Dir, ".git")) {
+	if isDirEmpty(filepath.Join(w.Path, ".git")) {
 		cmds = append(cmds, initGit())
-		cmds = append(cmds, remote(c))
+		cmds = append(cmds, remote(r))
 	}
 
-	cmds = append(cmds, fetch(c, v.Depth))
+	cmds = append(cmds, fetch(b, v.Depth))
 
-	if isPR(c) {
-		cmds = append(cmds, checkoutHead(c))
+	if isPR(b) {
+		cmds = append(cmds, checkoutHead(b))
 	} else {
-		cmds = append(cmds, checkoutSha(c))
+		cmds = append(cmds, checkoutSha(b))
 	}
 
 	for _, cmd := range cmds {
-		cmd.Dir = c.Dir
+		cmd.Dir = w.Path
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		trace(cmd)
@@ -86,12 +83,12 @@ func main() {
 }
 
 // Returns true if cloning a pull request.
-func isPR(c *plugin.Clone) bool {
-	return strings.HasPrefix(c.Ref, "refs/pull/")
+func isPR(b *plugin.Build) bool {
+	return strings.HasPrefix(b.Commit.Ref, "refs/pull/")
 }
 
-func isTag(c *plugin.Clone) bool {
-	return strings.HasPrefix(c.Ref, "refs/tags/")
+func isTag(b *plugin.Build) bool {
+	return strings.HasPrefix(b.Commit.Ref, "refs/tags/")
 }
 
 // Creates an empty git repository.
@@ -103,28 +100,28 @@ func initGit() *exec.Cmd {
 }
 
 // Sets the remote origin for the repository.
-func remote(c *plugin.Clone) *exec.Cmd {
+func remote(r *plugin.Repo) *exec.Cmd {
 	return exec.Command(
 		"git",
 		"remote",
 		"add",
 		"origin",
-		c.Origin,
+		r.Clone,
 	)
 }
 
 // Checkout executes a git checkout command.
-func checkoutSha(c *plugin.Clone) *exec.Cmd {
+func checkoutSha(b *plugin.Build) *exec.Cmd {
 	return exec.Command(
 		"git",
 		"checkout",
 		"-qf",
-		c.Sha,
+		b.Commit.Sha,
 	)
 }
 
 // Checkout executes a git checkout command.
-func checkoutHead(c *plugin.Clone) *exec.Cmd {
+func checkoutHead(b *plugin.Build) *exec.Cmd {
 	return exec.Command(
 		"git",
 		"checkout",
@@ -134,13 +131,13 @@ func checkoutHead(c *plugin.Clone) *exec.Cmd {
 }
 
 // Fetch executes a git fetch to origin.
-func fetch(c *plugin.Clone, depth int) *exec.Cmd {
+func fetch(b *plugin.Build, depth int) *exec.Cmd {
 	return exec.Command(
 		"git",
 		"fetch",
 		fmt.Sprintf("--depth=%d", depth),
 		"origin",
-		fmt.Sprintf("+%s:", c.Ref),
+		fmt.Sprintf("+%s:", b.Commit.Ref),
 	)
 }
 
@@ -151,8 +148,8 @@ func trace(cmd *exec.Cmd) {
 }
 
 // Writes the netrc file.
-func writeNetrc(in *plugin.Clone) error {
-	if len(in.Netrc.Machine) == 0 {
+func writeNetrc(in *plugin.Workspace) error {
+	if in.Netrc == nil || len(in.Netrc.Machine) == 0 {
 		return nil
 	}
 	out := fmt.Sprintf(
@@ -171,8 +168,8 @@ func writeNetrc(in *plugin.Clone) error {
 }
 
 // Writes the RSA private key
-func writeKey(in *plugin.Clone) error {
-	if len(in.Keypair.Private) == 0 {
+func writeKey(in *plugin.Workspace) error {
+	if in.Keys == nil || len(in.Keys.Private) == 0 {
 		return nil
 	}
 	home := "/root"
@@ -187,7 +184,7 @@ func writeKey(in *plugin.Clone) error {
 	confpath := filepath.Join(sshpath, "config")
 	privpath := filepath.Join(sshpath, "id_rsa")
 	ioutil.WriteFile(confpath, []byte("StrictHostKeyChecking no\n"), 0700)
-	return ioutil.WriteFile(privpath, []byte(in.Keypair.Private), 0600)
+	return ioutil.WriteFile(privpath, []byte(in.Keys.Private), 0600)
 }
 
 func isDirEmpty(name string) bool {
