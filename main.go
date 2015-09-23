@@ -21,8 +21,7 @@ password %s
 
 func main() {
 	v := struct {
-		Depth     int  `json:"depth"`
-		Recursive bool `json:"recursive"`
+		Depth int `json:"depth"`
 	}{}
 
 	r := new(plugin.Repo)
@@ -63,7 +62,7 @@ func main() {
 		cmds = append(cmds, remote(r))
 	}
 
-	cmds = append(cmds, fetch(b, v.Depth, v.Recursive))
+	cmds = append(cmds, fetch(b, v.Depth))
 
 	if isPR(b) {
 		cmds = append(cmds, checkoutHead(b))
@@ -132,21 +131,14 @@ func checkoutHead(b *plugin.Build) *exec.Cmd {
 }
 
 // Fetch executes a git fetch to origin.
-func fetch(b *plugin.Build, depth int, recursive bool) *exec.Cmd {
-	args := []string{"fetch"}
-
-	args = append(args, fmt.Sprintf("--depth=%d", depth))
-	if recursive {
-		args = append(args, "--recursive")
-	}
-
-	args = append(
-		args,
+func fetch(b *plugin.Build, depth int) *exec.Cmd {
+	return exec.Command(
+		"git",
+		"fetch",
+		fmt.Sprintf("--depth=%d", depth),
 		"origin",
 		fmt.Sprintf("+%s:", b.Commit.Ref),
 	)
-
-	return exec.Command("git", args...)
 }
 
 // Trace writes each command to standard error (preceded by a ‘$ ’) before it
