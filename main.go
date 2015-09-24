@@ -114,8 +114,9 @@ func remote(r *plugin.Repo) *exec.Cmd {
 func checkoutSha(b *plugin.Build) *exec.Cmd {
 	return exec.Command(
 		"git",
-		"checkout",
-		"-qf",
+		"reset",
+		"--hard",
+		"-q",
 		b.Commit.Sha,
 	)
 }
