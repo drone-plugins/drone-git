@@ -1,7 +1,7 @@
-# Docker image for the Drone build runner
+# Docker image for Drone's git-clone plugin
 #
 #     cd $GOPATH/src/github.com/drone-plugins/drone-git
-#     docker build --file=Dockerfile.alpine --rm=true -t drone/drone-build .
+#     docker build --file=Dockerfile.alpine --rm=true -t drone/drone-git .
 
 FROM alpine:3.2
 
@@ -15,11 +15,11 @@ WORKDIR /gopath/src/github.com/drone-plugins/drone-git
 ADD . /gopath/src/github.com/drone-plugins/drone-git
 
 RUN apk add -U go ca-certificates git openssh curl perl && \
-  go get                               && \
-  go build -a -tags netgo               && \
-  apk del go                            && \
-  mv drone-git /bin/drone-git       && \
-  rm -rf /gopath                        && \
+  go get                                                && \
+  go build -a -tags netgo                               && \
+  apk del go                                            && \
+  mv drone-git /bin/drone-git                           && \
+  rm -rf /gopath                                        && \
   rm -rf /var/cache/apk/*
 
 ENTRYPOINT ["/bin/drone-git"]
