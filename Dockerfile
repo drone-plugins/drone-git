@@ -4,6 +4,6 @@
 #     docker build --rm=true -t plugins/drone-git .
 
 FROM alpine:3.2
-RUN apk-install ca-certificates git openssh curl perl
+RUN apk add -U ca-certificates git openssh curl perl && rm -rf /var/cache/apk/*
 ADD drone-git /bin/
 ENTRYPOINT ["/bin/drone-git"]
