@@ -12,13 +12,18 @@ Clone a commit
 ```sh
 ./drone-git <<EOF
 {
-	"clone" : {
+	"repo": {
+		"clone": "git://github.com/drone/drone"
+	},
+	"build": {
+		"event": "push",
 		"branch": "master",
-		"origin": "git://github.com/drone/drone",
-		"remote": "git://github.com/drone/drone",
-		"dir": "/drone/src/github.com/drone/drone",
-		"ref": "refs/heads/master",
-		"sha": "436b7a6e2abaddfd35740527353e78a227ddcb2c"
+		"commit": "436b7a6e2abaddfd35740527353e78a227ddcb2c",
+		"ref": "refs/heads/master"
+	},
+	"workspace": {
+		"root": "/drone/src",
+		"path": "/drone/src/github.com/drone/drone",
 	}
 }
 EOF
@@ -29,13 +34,18 @@ Clone a pull request
 ```sh
 ./drone-git <<EOF
 {
-	"clone" : {
+	"repo": {
+		"clone": "git://github.com/drone/drone"
+	},
+	"build": {
+		"event": "pull_request",
 		"branch": "master",
-		"origin": "git://github.com/drone/drone",
-		"remote": "git://github.com/drone/drone",
-		"dir": "/drone/src/github.com/drone/drone",
-		"ref": "refs/pull/892/merge",
-		"sha": "8d6a233744a5dcacbf2605d4592a4bfe8b37320d"
+		"commit": "8d6a233744a5dcacbf2605d4592a4bfe8b37320d",
+		"ref": "refs/pull/892/merge"
+	},
+	"workspace": {
+		"root": "/drone/src",
+		"path": "/drone/src/github.com/drone/drone",
 	}
 }
 EOF
@@ -46,13 +56,18 @@ Clone a tag
 ```sh
 ./drone-git <<EOF
 {
-	"clone" : {
+	"repo": {
+		"clone": "git://github.com/drone/drone"
+	},
+	"build": {
+		"event": "tag",
 		"branch": "master",
-		"origin": "git://github.com/drone/drone",
-		"remote": "git://github.com/drone/drone",
-		"dir": "/drone/src/github.com/drone/drone",
-		"sha": "339fb92b9629f63c0e88016fffb865e3e1055483",
+		"commit": "339fb92b9629f63c0e88016fffb865e3e1055483",
 		"ref": "refs/tags/v0.2.0"
+	},
+	"workspace": {
+		"root": "/drone/src",
+		"path": "/drone/src/github.com/drone/drone",
 	}
 }
 EOF
@@ -73,13 +88,18 @@ Clone a repository inside the Docker container:
 ```sh
 docker run -i plugins/drone-git <<EOF
 {
-	"clone" : {
+	"repo": {
+		"clone": "git://github.com/drone/drone"
+	},
+	"build": {
+		"event": "push",
 		"branch": "master",
-		"origin": "git://github.com/drone/drone.git",
-		"remote": "git://github.com/drone/drone.git",
-		"dir": "/drone/src/github.com/drone/drone",
-		"ref": "refs/heads/master",
-		"sha": "436b7a6e2abaddfd35740527353e78a227ddcb2c"
+		"commit": "436b7a6e2abaddfd35740527353e78a227ddcb2c",
+		"ref": "refs/heads/master"
+	},
+	"workspace": {
+		"root": "/drone/src",
+		"path": "/drone/src/github.com/drone/drone",
 	}
 }
 EOF

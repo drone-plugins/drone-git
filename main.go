@@ -64,7 +64,7 @@ func main() {
 
 	cmds = append(cmds, fetch(b, v.Depth))
 
-	if isPR(b) {
+	if b.Event == plugin.EventPull {
 		cmds = append(cmds, checkoutHead(b))
 	} else {
 		cmds = append(cmds, checkoutSha(b))
@@ -80,15 +80,6 @@ func main() {
 			os.Exit(1)
 		}
 	}
-}
-
-// Returns true if cloning a pull request.
-func isPR(b *plugin.Build) bool {
-	return strings.HasPrefix(b.Commit.Ref, "refs/pull/")
-}
-
-func isTag(b *plugin.Build) bool {
-	return strings.HasPrefix(b.Commit.Ref, "refs/tags/")
 }
 
 // Creates an empty git repository.
@@ -116,7 +107,7 @@ func checkoutSha(b *plugin.Build) *exec.Cmd {
 		"git",
 		"checkout",
 		"-qf",
-		b.Commit.Sha,
+		b.Commit,
 	)
 }
 
@@ -137,7 +128,7 @@ func fetch(b *plugin.Build, depth int) *exec.Cmd {
 		"fetch",
 		fmt.Sprintf("--depth=%d", depth),
 		"origin",
-		fmt.Sprintf("+%s:", b.Commit.Ref),
+		fmt.Sprintf("+%s:", b.Ref),
 	)
 }
 
