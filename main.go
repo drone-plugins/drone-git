@@ -145,6 +145,7 @@ func skipVerify() *exec.Cmd {
 	return exec.Command(
 		"git",
 		"config",
+		"--global",
 		"http.sslVerify",
 		"false",
 	)
