@@ -21,7 +21,8 @@ password %s
 
 func main() {
 	v := struct {
-		Depth int `json:"depth"`
+		Depth      int  `json:"depth"`
+		SkipVerify bool `json:"skip_verify"`
 	}{}
 
 	r := new(plugin.Repo)
@@ -56,6 +57,11 @@ func main() {
 	}
 
 	var cmds []*exec.Cmd
+
+	if v.SkipVerify {
+		cmds = append(cmds, skipVerify())
+	}
+
 	// check for a .git directory and whether it's empty
 	if isDirEmpty(filepath.Join(w.Path, ".git")) {
 		cmds = append(cmds, initGit())
@@ -129,6 +135,18 @@ func fetch(b *plugin.Build, depth int) *exec.Cmd {
 		fmt.Sprintf("--depth=%d", depth),
 		"origin",
 		fmt.Sprintf("+%s:", b.Ref),
+	)
+}
+
+// skipVerify returns a git command that, when executed
+// configures git to skip ssl verification. This should
+// may be used with self-signed certificates.
+func skipVerify() *exec.Cmd {
+	return exec.Command(
+		"git",
+		"config",
+		"http.sslVerify",
+		"false",
 	)
 }
 
