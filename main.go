@@ -19,12 +19,15 @@ login %s
 password %s
 `
 
-func main() {
-	v := struct {
-		Depth      int  `json:"depth"`
-		SkipVerify bool `json:"skip_verify"`
-	}{}
+// Params stores the git clone parameters used to
+// configure and customzie the git clone behavior.
+type Params struct {
+	Depth      int  `json:"depth"`
+	SkipVerify bool `json:"skip_verify"`
+}
 
+func main() {
+	v := new(Params)
 	r := new(plugin.Repo)
 	b := new(plugin.Build)
 	w := new(plugin.Workspace)
@@ -34,6 +37,15 @@ func main() {
 	plugin.Param("vargs", &v)
 	plugin.MustParse()
 
+	err := clone(r, b, w, v)
+	if err != nil {
+		os.Exit(1)
+	}
+}
+
+// Clone clones the repository and build revision
+// into the build workspace.
+func clone(r *plugin.Repo, b *plugin.Build, w *plugin.Workspace, v *Params) error {
 	if v.Depth == 0 {
 		v.Depth = 50
 	}
@@ -41,19 +53,19 @@ func main() {
 	err := os.MkdirAll(w.Path, 0777)
 	if err != nil {
 		fmt.Printf("Error creating directory %s. %s\n", w.Path, err)
-		os.Exit(2)
+		return err
 	}
 
 	// generate the .netrc file
 	if err := writeNetrc(w); err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		os.Exit(3)
+		return err
 	}
 
 	// write the rsa private key if provided
 	if err := writeKey(w); err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		os.Exit(4)
+		return err
 	}
 
 	var cmds []*exec.Cmd
@@ -68,11 +80,12 @@ func main() {
 		cmds = append(cmds, remote(r))
 	}
 
-	cmds = append(cmds, fetch(b, v.Depth))
-
-	if b.Event == plugin.EventPull {
+	switch {
+	case isPullRequest(b) || isTag(b):
+		cmds = append(cmds, fetch(b, v.Depth))
 		cmds = append(cmds, checkoutHead(b))
-	} else {
+	default:
+		cmds = append(cmds, fetch(b, v.Depth))
 		cmds = append(cmds, checkoutSha(b))
 	}
 
@@ -83,9 +96,11 @@ func main() {
 		trace(cmd)
 		err := cmd.Run()
 		if err != nil {
-			os.Exit(1)
+			return err
 		}
 	}
+
+	return nil
 }
 
 // Creates an empty git repository.
@@ -108,16 +123,6 @@ func remote(r *plugin.Repo) *exec.Cmd {
 }
 
 // Checkout executes a git checkout command.
-func checkoutSha(b *plugin.Build) *exec.Cmd {
-	return exec.Command(
-		"git",
-		"checkout",
-		"-qf",
-		b.Commit,
-	)
-}
-
-// Checkout executes a git checkout command.
 func checkoutHead(b *plugin.Build) *exec.Cmd {
 	return exec.Command(
 		"git",
@@ -127,7 +132,18 @@ func checkoutHead(b *plugin.Build) *exec.Cmd {
 	)
 }
 
-// Fetch executes a git fetch to origin.
+// Checkout executes a git checkout command.
+func checkoutSha(b *plugin.Build) *exec.Cmd {
+	return exec.Command(
+		"git",
+		"reset",
+		"--hard",
+		"-q",
+		b.Commit,
+	)
+}
+
+// fetchRef executes a git fetch to origin.
 func fetch(b *plugin.Build, depth int) *exec.Cmd {
 	return exec.Command(
 		"git",
@@ -209,4 +225,13 @@ func isDirEmpty(name string) bool {
 		return true
 	}
 	return false
+}
+
+func isPullRequest(b *plugin.Build) bool {
+	return b.Event == plugin.EventPull
+}
+
+func isTag(b *plugin.Build) bool {
+	return b.Event == plugin.EventTag ||
+		strings.HasPrefix(b.Ref, "refs/tags/")
 }
