@@ -24,6 +24,7 @@ password %s
 type Params struct {
 	Depth      int  `json:"depth"`
 	SkipVerify bool `json:"skip_verify"`
+	Tags       bool `json:"tags"`
 }
 
 func main() {
@@ -82,10 +83,10 @@ func clone(r *plugin.Repo, b *plugin.Build, w *plugin.Workspace, v *Params) erro
 
 	switch {
 	case isPullRequest(b) || isTag(b):
-		cmds = append(cmds, fetch(b, v.Depth))
+		cmds = append(cmds, fetch(b, v.Tags, v.Depth))
 		cmds = append(cmds, checkoutHead(b))
 	default:
-		cmds = append(cmds, fetch(b, v.Depth))
+		cmds = append(cmds, fetch(b, v.Tags, v.Depth))
 		cmds = append(cmds, checkoutSha(b))
 	}
 
@@ -143,11 +144,17 @@ func checkoutSha(b *plugin.Build) *exec.Cmd {
 	)
 }
 
-// fetchRef executes a git fetch to origin.
-func fetch(b *plugin.Build, depth int) *exec.Cmd {
+// fetch retuns git command that fetches from origin. If tags is true
+// then tags will be fetched.
+func fetch(b *plugin.Build, tags bool, depth int) *exec.Cmd {
+	tags_option := "--no-tags"
+	if tags {
+		tags_option = "--tags"
+	}
 	return exec.Command(
 		"git",
 		"fetch",
+		tags_option,
 		fmt.Sprintf("--depth=%d", depth),
 		"origin",
 		fmt.Sprintf("+%s:", b.Ref),

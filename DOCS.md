@@ -5,6 +5,7 @@ the default configuration with the following parameters:
 * **depth** - creates a shallow clone with truncated history
 * **recursive** - recursively clones git submodules
 * **skip_verify** - disables ssl verification when set to `true`
+* **tags** - fetches tags when set to `true`
 
 The following is a sample Git clone configuration in your .drone.yml file:
 
@@ -12,4 +13,5 @@ The following is a sample Git clone configuration in your .drone.yml file:
 clone:
   depth: 50
   recursive: false
+  tags: false
 ```
