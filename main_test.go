@@ -235,14 +235,8 @@ func readFile(dir, file string) string {
 
 // getTags returns all of the tags in a git repository as a map.
 func getTags(dir string) (map[string]bool, error) {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
-	if err := os.Chdir(dir); err != nil {
-		return nil, err
-	}
 	cmd := exec.Command("git", "tag")
+	cmd.Dir = dir
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return nil, err
@@ -259,9 +253,6 @@ func getTags(dir string) (map[string]bool, error) {
 		return nil, err
 	}
 	if err := cmd.Wait(); err != nil {
-		return nil, err
-	}
-	if err := os.Chdir(cwd); err != nil {
 		return nil, err
 	}
 	return tags, nil
