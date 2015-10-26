@@ -23,6 +23,7 @@ password %s
 // configure and customzie the git clone behavior.
 type Params struct {
 	Depth      int  `json:"depth"`
+	Recursive  bool `json:"recursive"`
 	SkipVerify bool `json:"skip_verify"`
 	Tags       bool `json:"tags"`
 }
@@ -88,6 +89,10 @@ func clone(r *plugin.Repo, b *plugin.Build, w *plugin.Workspace, v *Params) erro
 	default:
 		cmds = append(cmds, fetch(b, v.Tags, v.Depth))
 		cmds = append(cmds, checkoutSha(b))
+	}
+
+	if v.Recursive {
+		cmds = append(cmds, updateSubmodules(v.Depth))
 	}
 
 	for _, cmd := range cmds {
@@ -158,6 +163,18 @@ func fetch(b *plugin.Build, tags bool, depth int) *exec.Cmd {
 		fmt.Sprintf("--depth=%d", depth),
 		"origin",
 		fmt.Sprintf("+%s:", b.Ref),
+	)
+}
+
+// updateSubmodules recursively initializes and updates submodules.
+func updateSubmodules(depth int) *exec.Cmd {
+	return exec.Command(
+		"git",
+		"submodule",
+		"update",
+		"--init",
+		"--recursive",
+		fmt.Sprintf("--depth=%d", depth),
 	)
 }
 
