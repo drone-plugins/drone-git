@@ -22,10 +22,11 @@ password %s
 // Params stores the git clone parameters used to
 // configure and customzie the git clone behavior.
 type Params struct {
-	Depth      int  `json:"depth"`
-	Recursive  bool `json:"recursive"`
-	SkipVerify bool `json:"skip_verify"`
-	Tags       bool `json:"tags"`
+	Depth      int               `json:"depth"`
+	Recursive  bool              `json:"recursive"`
+	SkipVerify bool              `json:"skip_verify"`
+	Tags       bool              `json:"tags"`
+	Submodules map[string]string `json:"submodule_override"`
 }
 
 func main() {
@@ -89,6 +90,10 @@ func clone(r *plugin.Repo, b *plugin.Build, w *plugin.Workspace, v *Params) erro
 	default:
 		cmds = append(cmds, fetch(b, v.Tags, v.Depth))
 		cmds = append(cmds, checkoutSha(b))
+	}
+
+	for name, url := range v.Submodules {
+		cmds = append(cmds, remapSubmodule(name, url))
 	}
 
 	if v.Recursive {
@@ -188,6 +193,18 @@ func skipVerify() *exec.Cmd {
 		"--global",
 		"http.sslVerify",
 		"false",
+	)
+}
+
+// remapSubmodule returns a git command that, when executed
+// configures git to remap submodule urls.
+func remapSubmodule(name, url string) *exec.Cmd {
+	name = fmt.Sprintf("submodule.%s.url", name)
+	return exec.Command(
+		"git",
+		"config",
+		name,
+		url,
 	)
 }
 
