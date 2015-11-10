@@ -30,7 +30,8 @@ Sample configuration to override submodule urls:
 
 ```
 clone:
-  recursive:
+  recursive: true
+  submodule_override:
     hello-world: https://github.com/octocat/hello-world.git
 ```
 
