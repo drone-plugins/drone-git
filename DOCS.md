@@ -4,6 +4,7 @@ the default configuration with the following parameters:
 
 * `depth` - creates a shallow clone with truncated history
 * `recursive` - recursively clones git submodules
+* `path` - relative path inside `/drone/src` where the repository is cloned
 * `skip_verify` - disables ssl verification when set to `true`
 * `tags` - fetches tags when set to `true`
 * `submodule_override` - override submodule urls
@@ -17,7 +18,14 @@ clone:
   tags: false
 ```
 
-## Submodules
+Sample configuration to override the relative clone path:
+
+```
+# clones to /drone/src/foo/bar
+
+clone:
+  path: foo/bar
+```
 
 Sample configuration to clone submodules:
 
@@ -26,7 +34,25 @@ clone:
   recursive: true
 ```
 
-Sample configuration to override submodule urls:
+## Private Submodules
+
+Private submodules may encounter the following error:
+
+```
+Warning: Permanently added 'github.com,192.30.252.130' (RSA) to the list of known hosts.
+ERROR: Repository not found.
+fatal: Could not read from remote repository.
+```
+
+This happens when a private submodule uses a `git+ssh` url:
+
+```
+[submodule "hello-world"]
+    path = hello-world
+    url = git@github.com:octocat/hello-world.git
+```
+
+This can be mitigated by overriding the submodule url to use `git+https`:
 
 ```
 clone:
@@ -35,4 +61,4 @@ clone:
     hello-world: https://github.com/octocat/hello-world.git
 ```
 
-The above configuration is intended for private submodules created using ssh clone urls (i.e. `git@github.com:octocat/hello-world.git`). We recommend overriding to use https clone urls to take advantage of this plugins built-in `netrc` authentication mechanism.
+Overriding the submodule url to force `git+https` allows us to take advantage of the `netrc` file and automatically authenticate to the submodule repository.

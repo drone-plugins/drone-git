@@ -97,7 +97,7 @@ func clone(r *plugin.Repo, b *plugin.Build, w *plugin.Workspace, v *Params) erro
 	}
 
 	if v.Recursive {
-		cmds = append(cmds, updateSubmodules(v.Depth))
+		cmds = append(cmds, updateSubmodules())
 	}
 
 	for _, cmd := range cmds {
@@ -172,14 +172,13 @@ func fetch(b *plugin.Build, tags bool, depth int) *exec.Cmd {
 }
 
 // updateSubmodules recursively initializes and updates submodules.
-func updateSubmodules(depth int) *exec.Cmd {
+func updateSubmodules() *exec.Cmd {
 	return exec.Command(
 		"git",
 		"submodule",
 		"update",
 		"--init",
 		"--recursive",
-		fmt.Sprintf("--depth=%d", depth),
 	)
 }
 

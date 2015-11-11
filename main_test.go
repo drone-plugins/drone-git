@@ -307,7 +307,6 @@ func TestUpdateSubmodules(t *testing.T) {
 				"update",
 				"--init",
 				"--recursive",
-				"--depth=50",
 			},
 		},
 		{
@@ -318,12 +317,11 @@ func TestUpdateSubmodules(t *testing.T) {
 				"update",
 				"--init",
 				"--recursive",
-				"--depth=100",
 			},
 		},
 	}
 	for _, td := range testdata {
-		c := updateSubmodules(td.depth)
+		c := updateSubmodules()
 		if len(c.Args) != len(td.exp) {
 			t.Errorf("Expected: %s, got %s", td.exp, c.Args)
 		}
