@@ -22,11 +22,12 @@ password %s
 // Params stores the git clone parameters used to
 // configure and customzie the git clone behavior.
 type Params struct {
-	Depth      int               `json:"depth"`
-	Recursive  bool              `json:"recursive"`
-	SkipVerify bool              `json:"skip_verify"`
-	Tags       bool              `json:"tags"`
-	Submodules map[string]string `json:"submodule_override"`
+	Depth           int               `json:"depth"`
+	Recursive       bool              `json:"recursive"`
+	SkipVerify      bool              `json:"skip_verify"`
+	Tags            bool              `json:"tags"`
+	Submodules      map[string]string `json:"submodule_override"`
+	SubmoduleRemote bool              `json:"submodule_update_remote"`
 }
 
 func main() {
@@ -97,7 +98,7 @@ func clone(r *plugin.Repo, b *plugin.Build, w *plugin.Workspace, v *Params) erro
 	}
 
 	if v.Recursive {
-		cmds = append(cmds, updateSubmodules())
+		cmds = append(cmds, updateSubmodules(v.SubmoduleRemote))
 	}
 
 	for _, cmd := range cmds {
@@ -172,14 +173,20 @@ func fetch(b *plugin.Build, tags bool, depth int) *exec.Cmd {
 }
 
 // updateSubmodules recursively initializes and updates submodules.
-func updateSubmodules() *exec.Cmd {
-	return exec.Command(
+func updateSubmodules(remote bool) *exec.Cmd {
+	cmd := exec.Command(
 		"git",
 		"submodule",
 		"update",
 		"--init",
 		"--recursive",
 	)
+
+	if remote {
+		cmd.Args = append(cmd.Args, "--remote")
+	}
+
+	return cmd
 }
 
 // skipVerify returns a git command that, when executed

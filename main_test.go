@@ -321,7 +321,50 @@ func TestUpdateSubmodules(t *testing.T) {
 		},
 	}
 	for _, td := range testdata {
-		c := updateSubmodules()
+		c := updateSubmodules(false)
+		if len(c.Args) != len(td.exp) {
+			t.Errorf("Expected: %s, got %s", td.exp, c.Args)
+		}
+		for i := range c.Args {
+			if c.Args[i] != td.exp[i] {
+				t.Errorf("Expected: %s, got %s", td.exp, c.Args)
+			}
+		}
+	}
+}
+
+// TestUpdateSubmodules tests if the arguments to `git submodule update`
+// are constructed properly.
+func TestUpdateSubmodulesRemote(t *testing.T) {
+	testdata := []struct {
+		depth int
+		exp   []string
+	}{
+		{
+			50,
+			[]string{
+				"git",
+				"submodule",
+				"update",
+				"--init",
+				"--recursive",
+				"--remote",
+			},
+		},
+		{
+			100,
+			[]string{
+				"git",
+				"submodule",
+				"update",
+				"--init",
+				"--recursive",
+				"--remote",
+			},
+		},
+	}
+	for _, td := range testdata {
+		c := updateSubmodules(true)
 		if len(c.Args) != len(td.exp) {
 			t.Errorf("Expected: %s, got %s", td.exp, c.Args)
 		}

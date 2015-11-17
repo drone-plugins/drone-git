@@ -8,6 +8,7 @@ the default configuration with the following parameters:
 * `skip_verify` - disables ssl verification when set to `true`
 * `tags` - fetches tags when set to `true`
 * `submodule_override` - override submodule urls
+* `submodule_update_remote` - pass the `--remote` flag to git submodule update (useful when tracking a branch instead of a commit in a submodule)
 
 Sample configuration:
 
