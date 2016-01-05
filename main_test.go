@@ -247,15 +247,17 @@ func TestCloneNonEmpty(t *testing.T) {
 // TestClone tests if the arguments to `git fetch` are constructed properly.
 func TestFetch(t *testing.T) {
 	testdata := []struct {
-		build *plugin.Build
-		tags  bool
-		depth int
-		exp   []string
+		build    *plugin.Build
+		tags     bool
+		depth    int
+		complete bool
+		exp      []string
 	}{
 		{
 			&plugin.Build{Ref: "refs/heads/master"},
 			false,
 			50,
+			false,
 			[]string{
 				"git",
 				"fetch",
@@ -269,6 +271,7 @@ func TestFetch(t *testing.T) {
 			&plugin.Build{Ref: "refs/heads/master"},
 			true,
 			100,
+			false,
 			[]string{
 				"git",
 				"fetch",
@@ -278,9 +281,22 @@ func TestFetch(t *testing.T) {
 				"+refs/heads/master:",
 			},
 		},
+		{
+			&plugin.Build{Ref: "refs/heads/master"},
+			false,
+			50,
+			true,
+			[]string{
+				"git",
+				"fetch",
+				"--no-tags",
+				"origin",
+				"+refs/heads/master:",
+			},
+		},
 	}
 	for _, td := range testdata {
-		c := fetch(td.build, td.tags, td.depth)
+		c := fetch(td.build, td.tags, td.depth, td.complete)
 		if len(c.Args) != len(td.exp) {
 			t.Errorf("Expected: %s, got %s", td.exp, c.Args)
 		}

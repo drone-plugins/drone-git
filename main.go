@@ -28,6 +28,11 @@ type Params struct {
 	Tags            bool              `json:"tags"`
 	Submodules      map[string]string `json:"submodule_override"`
 	SubmoduleRemote bool              `json:"submodule_update_remote"`
+
+	// Complete is whether to perform a complete fetch of all
+	// history. If Complete is true, then Depth is ignored (it is
+	// effectively set to infinity).
+	Complete bool `json:"complete"`
 }
 
 func main() {
@@ -86,10 +91,10 @@ func clone(r *plugin.Repo, b *plugin.Build, w *plugin.Workspace, v *Params) erro
 
 	switch {
 	case isPullRequest(b) || isTag(b):
-		cmds = append(cmds, fetch(b, v.Tags, v.Depth))
+		cmds = append(cmds, fetch(b, v.Tags, v.Depth, v.Complete))
 		cmds = append(cmds, checkoutHead(b))
 	default:
-		cmds = append(cmds, fetch(b, v.Tags, v.Depth))
+		cmds = append(cmds, fetch(b, v.Tags, v.Depth, v.Complete))
 		cmds = append(cmds, checkoutSha(b))
 	}
 
@@ -157,19 +162,24 @@ func checkoutSha(b *plugin.Build) *exec.Cmd {
 
 // fetch retuns git command that fetches from origin. If tags is true
 // then tags will be fetched.
-func fetch(b *plugin.Build, tags bool, depth int) *exec.Cmd {
+func fetch(b *plugin.Build, tags bool, depth int, complete bool) *exec.Cmd {
 	tags_option := "--no-tags"
 	if tags {
 		tags_option = "--tags"
 	}
-	return exec.Command(
+	cmd := exec.Command(
 		"git",
 		"fetch",
 		tags_option,
-		fmt.Sprintf("--depth=%d", depth),
+	)
+	if !complete {
+		cmd.Args = append(cmd.Args, fmt.Sprintf("--depth=%d", depth))
+	}
+	cmd.Args = append(cmd.Args,
 		"origin",
 		fmt.Sprintf("+%s:", b.Ref),
 	)
+	return cmd
 }
 
 // updateSubmodules recursively initializes and updates submodules.
