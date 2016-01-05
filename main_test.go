@@ -254,6 +254,19 @@ func TestFetch(t *testing.T) {
 		exp      []string
 	}{
 		{
+			&plugin.Build{Ref: ""},
+			false,
+			50,
+			false,
+			[]string{
+				"git",
+				"fetch",
+				"--no-tags",
+				"--depth=50",
+				"origin",
+			},
+		},
+		{
 			&plugin.Build{Ref: "refs/heads/master"},
 			false,
 			50,
