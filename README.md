@@ -1,6 +1,9 @@
 # drone-git
 Drone plugin for cloning git repositories.
 
+[![Build Status](http://beta.drone.io/api/badges/drone-plugins/drone-git/status.svg)](http://beta.drone.io/drone-plugins/drone-git)
+[![Code Coverage](https://coverage.drone.io/badges/drone-plugins/drone-git/coverage.svg)](https://coverage.drone.io/drone-plugins/drone-git)
+
 ## Overview
 
 This plugin is responsible for cloning `git` repositories. It is capable of cloning a specific commit, branch, tag or pull request. The clone path is provided in the `dir` field.

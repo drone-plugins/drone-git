@@ -8,9 +8,12 @@ build:
   commands:
     - go get
     - go build
-    - go test
+    - go test -coverprofile=coverage.out
 
 publish:
+  coverage:
+    when:
+      branch: master
   docker:
     username: drone
     password: $$DOCKER_PASS
