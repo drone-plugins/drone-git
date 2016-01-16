@@ -2,7 +2,7 @@
 Drone plugin for cloning git repositories.
 
 [![Build Status](http://beta.drone.io/api/badges/drone-plugins/drone-git/status.svg)](http://beta.drone.io/drone-plugins/drone-git)
-[![Code Coverage](https://coverage.drone.io/badges/drone-plugins/drone-git/coverage.svg)](https://coverage.drone.io/drone-plugins/drone-git)
+[![Code Coverage](https://aircover.co/badges/drone-plugins/drone-git/coverage.svg)](https://aircover.co/drone-plugins/drone-git)
 
 ## Overview
 
