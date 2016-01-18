@@ -30,7 +30,13 @@ type Params struct {
 	SubmoduleRemote bool              `json:"submodule_update_remote"`
 }
 
+var (
+	buildDate string
+)
+
 func main() {
+	fmt.Printf("Drone Git Plugin built at %s\n", buildDate)
+
 	v := new(Params)
 	r := new(plugin.Repo)
 	b := new(plugin.Build)
