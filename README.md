@@ -2,7 +2,7 @@
 
 [![Build Status](http://beta.drone.io/api/badges/drone-plugins/drone-git/status.svg)](http://beta.drone.io/drone-plugins/drone-git)
 [![Coverage Status](https://aircover.co/badges/drone-plugins/drone-git/coverage.svg)](https://aircover.co/drone-plugins/drone-git)
-[![Code Coverage](https://aircover.co/badges/drone-plugins/drone-git/coverage.svg)](https://aircover.co/drone-plugins/drone-git)
+[![](https://badge.imagelayers.io/plugins/drone-git:latest.svg)](https://imagelayers.io/?images=plugins/drone-git:latest 'Get your own badge on imagelayers.io')
 
 Drone plugin to clone `git` repositories
 
