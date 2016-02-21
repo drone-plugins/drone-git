@@ -4,7 +4,7 @@
 [![Coverage Status](https://aircover.co/badges/drone-plugins/drone-git/coverage.svg)](https://aircover.co/drone-plugins/drone-git)
 [![](https://badge.imagelayers.io/plugins/drone-git:latest.svg)](https://imagelayers.io/?images=plugins/drone-git:latest 'Get your own badge on imagelayers.io')
 
-Drone plugin to clone `git` repositories
+Drone plugin to clone `git` repositories. For the usage information and a listing of the available options please take a look at [the docs](DOCS.md).
 
 ## Overview
 
