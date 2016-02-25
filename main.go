@@ -31,11 +31,11 @@ type Params struct {
 }
 
 var (
-	buildDate string
+	buildCommit string
 )
 
 func main() {
-	fmt.Printf("Drone Git Plugin built at %s\n", buildDate)
+	fmt.Printf("Drone Git Plugin built from %s\n", buildCommit)
 
 	v := new(Params)
 	r := new(plugin.Repo)
