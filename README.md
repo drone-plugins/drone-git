@@ -26,7 +26,7 @@ make deps build
 ./drone-git <<EOF
 {
     "repo": {
-        "clone": "git://github.com/drone/drone"
+        "clone_url": "git://github.com/drone/drone"
     },
     "build": {
         "event": "push",
@@ -48,7 +48,7 @@ EOF
 ./drone-git <<EOF
 {
     "repo": {
-        "clone": "git://github.com/drone/drone"
+        "clone_url": "git://github.com/drone/drone"
     },
     "build": {
         "event": "pull_request",
@@ -70,7 +70,7 @@ EOF
 ./drone-git <<EOF
 {
     "repo": {
-        "clone": "git://github.com/drone/drone"
+        "clone_url": "git://github.com/drone/drone"
     },
     "build": {
         "event": "tag",
@@ -100,7 +100,7 @@ make deps docker
 docker run -i plugins/drone-git <<EOF
 {
     "repo": {
-        "clone": "git://github.com/drone/drone"
+        "clone_url": "git://github.com/drone/drone"
     },
     "build": {
         "event": "push",
@@ -122,7 +122,7 @@ EOF
 docker run -i plugins/drone-git <<EOF
 {
     "repo": {
-        "clone": "git://github.com/drone/drone"
+        "clone_url": "git://github.com/drone/drone"
     },
     "build": {
         "event": "pull_request",
@@ -144,7 +144,7 @@ EOF
 docker run -i plugins/drone-git <<EOF
 {
     "repo": {
-        "clone": "git://github.com/drone/drone"
+        "clone_url": "git://github.com/drone/drone"
     },
     "build": {
         "event": "tag",
