@@ -56,10 +56,6 @@ func main() {
 // Clone clones the repository and build revision
 // into the build workspace.
 func clone(r *plugin.Repo, b *plugin.Build, w *plugin.Workspace, v *Params) error {
-	if v.Depth == 0 {
-		v.Depth = 50
-	}
-
 	err := os.MkdirAll(w.Path, 0777)
 	if err != nil {
 		fmt.Printf("Error creating directory %s. %s\n", w.Path, err)
@@ -168,14 +164,18 @@ func fetch(b *plugin.Build, tags bool, depth int) *exec.Cmd {
 	if tags {
 		tags_option = "--tags"
 	}
-	return exec.Command(
+	cmd := exec.Command(
 		"git",
 		"fetch",
 		tags_option,
-		fmt.Sprintf("--depth=%d", depth),
-		"origin",
-		fmt.Sprintf("+%s:", b.Ref),
 	)
+	if depth != 0 {
+		cmd.Args = append(cmd.Args, fmt.Sprintf("--depth=%d", depth))
+	}
+	cmd.Args = append(cmd.Args, "origin")
+	cmd.Args = append(cmd.Args, fmt.Sprintf("+%s:", b.Ref))
+
+	return cmd
 }
 
 // updateSubmodules recursively initializes and updates submodules.
