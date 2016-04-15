@@ -91,7 +91,7 @@ func main() {
 		cli.GenericFlag{
 			Name:   "submodule-override",
 			Usage:  "json map of submodule overrides",
-			EnvVar: "SUBMODULE_OVERRIDE",
+			EnvVar: "PLUGIN_SUBMODULE_OVERRIDE",
 			Value:  &MapFlag{},
 		},
 	}
