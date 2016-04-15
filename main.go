@@ -10,101 +10,106 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/drone/drone-plugin-go/plugin"
+	"github.com/codegangsta/cli"
+	"github.com/vrischmann/envconfig"
 )
 
-var netrcFile = `
+const netrcFile = `
 machine %s
 login %s
 password %s
 `
 
-// Params stores the git clone parameters used to
-// configure and customzie the git clone behavior.
-type Params struct {
-	Depth           int               `json:"depth"`
-	Recursive       bool              `json:"recursive"`
-	SkipVerify      bool              `json:"skip_verify"`
-	Tags            bool              `json:"tags"`
-	Submodules      map[string]string `json:"submodule_override"`
-	SubmoduleRemote bool              `json:"submodule_update_remote"`
+type Plugin struct {
+	Repo struct {
+		Clone string `envconfig:"CI_CLONE_URL"`
+	}
+
+	Build struct {
+		Path   string `envconfig:"CI_WORKSPACE"`
+		Event  string `envconfig:"CI_BUILD_EVENT"`
+		Number int    `envconfig:"CI_BUILD_NUMBER"`
+		Commit string `envconfig:"CI_COMMIT_SHA"`
+		Ref    string `envconfig:"CI_COMMIT_REF"`
+	}
+
+	Netrc struct {
+		Machine  string `envconfig:"CI_NETRC_MACHINE"`
+		Login    string `envconfig:"CI_NETRC_LOGIN"`
+		Password string `envconfig:"CI_NETRC_PASSWORD"`
+	}
+
+	Config struct {
+		Depth           int               `envconfig:"PLUGIN_DEPTH"`
+		Recursive       bool              `envconfig:"PLUGIN_RECURSIVE"`
+		SkipVerify      bool              `envconfig:"PLUGIN_SKIP_VERIFY"`
+		Tags            bool              `envconfig:"PLUGIN_TAGS"`
+		Submodules      map[string]string `envconfig:"PLUGIN_SUBMODULE_OVERRIDE"`
+		SubmoduleRemote bool              `envconfig:"PLUGIN_SUBMODULE_UPDATE_REMOTE"`
+	}
 }
 
-var (
-	buildCommit string
-)
+var opts = envconfig.Options{
+	AllOptional: true,
+}
 
 func main() {
-	fmt.Printf("Drone Git Plugin built from %s\n", buildCommit)
+	plugin := &Plugin{}
 
-	v := new(Params)
-	r := new(plugin.Repo)
-	b := new(plugin.Build)
-	w := new(plugin.Workspace)
-	plugin.Param("repo", r)
-	plugin.Param("build", b)
-	plugin.Param("workspace", w)
-	plugin.Param("vargs", &v)
-	plugin.MustParse()
+	if err := envconfig.InitWithOptions(&plugin, opts); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
-	err := clone(r, b, w, v)
-	if err != nil {
+	if err := plugin.Exec(); err != nil {
+		fmt.Println(err)
 		os.Exit(1)
 	}
 }
 
-// Clone clones the repository and build revision
-// into the build workspace.
-func clone(r *plugin.Repo, b *plugin.Build, w *plugin.Workspace, v *Params) error {
-	err := os.MkdirAll(w.Path, 0777)
+func (p Plugin) Exec() error {
+	err := os.MkdirAll(p.Build.Path, 0777)
 	if err != nil {
-		fmt.Printf("Error creating directory %s. %s\n", w.Path, err)
 		return err
 	}
 
 	// generate the .netrc file
-	if err := writeNetrc(w); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return err
-	}
-
-	// write the rsa private key if provided
-	if err := writeKey(w); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+	err = writeNetrc(p.Netrc.Login, p.Netrc.Login, p.Netrc.Password)
+	if err != nil {
 		return err
 	}
 
 	var cmds []*exec.Cmd
 
-	if v.SkipVerify {
+	if p.Config.SkipVerify {
 		cmds = append(cmds, skipVerify())
 	}
 
 	// check for a .git directory and whether it's empty
-	if isDirEmpty(filepath.Join(w.Path, ".git")) {
+	if isDirEmpty(filepath.Join(p.Build.Path, ".git")) {
 		cmds = append(cmds, initGit())
-		cmds = append(cmds, remote(r))
+		cmds = append(cmds, remote(p.Repo.Clone))
 	}
 
 	switch {
-	case isPullRequest(b) || isTag(b):
-		cmds = append(cmds, fetch(b, v.Tags, v.Depth))
-		cmds = append(cmds, checkoutHead(b))
+	case isPullRequest(p.Build.Event) || isTag(p.Build.Event, p.Build.Ref):
+		cmds = append(cmds, fetch(p.Build.Ref, p.Config.Tags, p.Config.Depth))
+		cmds = append(cmds, checkoutHead())
 	default:
-		cmds = append(cmds, fetch(b, v.Tags, v.Depth))
-		cmds = append(cmds, checkoutSha(b))
+		cmds = append(cmds, fetch(p.Build.Ref, p.Config.Tags, p.Config.Depth))
+		cmds = append(cmds, checkoutSha(p.Build.Commit))
 	}
 
-	for name, url := range v.Submodules {
+	for name, url := range p.Config.Submodules {
 		cmds = append(cmds, remapSubmodule(name, url))
 	}
 
-	if v.Recursive {
-		cmds = append(cmds, updateSubmodules(v.SubmoduleRemote))
+	if p.Config.Recursive {
+		cmds = append(cmds, updateSubmodules(p.Config.SubmoduleRemote))
 	}
 
 	for _, cmd := range cmds {
-		cmd.Dir = w.Path
+		cmd.Dir = p.Build.Path
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		trace(cmd)
@@ -126,18 +131,18 @@ func initGit() *exec.Cmd {
 }
 
 // Sets the remote origin for the repository.
-func remote(r *plugin.Repo) *exec.Cmd {
+func remote(remote string) *exec.Cmd {
 	return exec.Command(
 		"git",
 		"remote",
 		"add",
 		"origin",
-		r.Clone,
+		remote,
 	)
 }
 
 // Checkout executes a git checkout command.
-func checkoutHead(b *plugin.Build) *exec.Cmd {
+func checkoutHead() *exec.Cmd {
 	return exec.Command(
 		"git",
 		"checkout",
@@ -147,19 +152,19 @@ func checkoutHead(b *plugin.Build) *exec.Cmd {
 }
 
 // Checkout executes a git checkout command.
-func checkoutSha(b *plugin.Build) *exec.Cmd {
+func checkoutSha(commit string) *exec.Cmd {
 	return exec.Command(
 		"git",
 		"reset",
 		"--hard",
 		"-q",
-		b.Commit,
+		commit,
 	)
 }
 
 // fetch retuns git command that fetches from origin. If tags is true
 // then tags will be fetched.
-func fetch(b *plugin.Build, tags bool, depth int) *exec.Cmd {
+func fetch(ref string, tags bool, depth int) *exec.Cmd {
 	tags_option := "--no-tags"
 	if tags {
 		tags_option = "--tags"
@@ -173,8 +178,7 @@ func fetch(b *plugin.Build, tags bool, depth int) *exec.Cmd {
 		cmd.Args = append(cmd.Args, fmt.Sprintf("--depth=%d", depth))
 	}
 	cmd.Args = append(cmd.Args, "origin")
-	cmd.Args = append(cmd.Args, fmt.Sprintf("+%s:", b.Ref))
-
+	cmd.Args = append(cmd.Args, fmt.Sprintf("+%s:", ref))
 	return cmd
 }
 
@@ -195,9 +199,8 @@ func updateSubmodules(remote bool) *exec.Cmd {
 	return cmd
 }
 
-// skipVerify returns a git command that, when executed
-// configures git to skip ssl verification. This should
-// may be used with self-signed certificates.
+// skipVerify returns a git command that, when executed configures git to skip
+// ssl verification. This should may be used with self-signed certificates.
 func skipVerify() *exec.Cmd {
 	return exec.Command(
 		"git",
@@ -208,8 +211,8 @@ func skipVerify() *exec.Cmd {
 	)
 }
 
-// remapSubmodule returns a git command that, when executed
-// configures git to remap submodule urls.
+// remapSubmodule returns a git command that, when executed configures git to
+// remap submodule urls.
 func remapSubmodule(name, url string) *exec.Cmd {
 	name = fmt.Sprintf("submodule.%s.url", name)
 	return exec.Command(
@@ -220,22 +223,22 @@ func remapSubmodule(name, url string) *exec.Cmd {
 	)
 }
 
-// Trace writes each command to standard error (preceded by a ‘$ ’) before it
-// is executed. Used for debugging your build.
+// trace writes each command to stdout before it is executed. This is useful
+// debugging the build to determine which commands were executed.
 func trace(cmd *exec.Cmd) {
-	fmt.Println("$", strings.Join(cmd.Args, " "))
+	fmt.Printf("<command>%s</command>\n", strings.Join(cmd.Args, " "))
 }
 
-// Writes the netrc file.
-func writeNetrc(in *plugin.Workspace) error {
-	if in.Netrc == nil || len(in.Netrc.Machine) == 0 {
+// writeNetrc writes the netrc file to the user home directory.
+func writeNetrc(machine, login, password string) error {
+	if machine == "" {
 		return nil
 	}
 	out := fmt.Sprintf(
 		netrcFile,
-		in.Netrc.Machine,
-		in.Netrc.Login,
-		in.Netrc.Password,
+		machine,
+		login,
+		password,
 	)
 	home := "/root"
 	u, err := user.Current()
@@ -246,45 +249,205 @@ func writeNetrc(in *plugin.Workspace) error {
 	return ioutil.WriteFile(path, []byte(out), 0600)
 }
 
-// Writes the RSA private key
-func writeKey(in *plugin.Workspace) error {
-	if in.Keys == nil || len(in.Keys.Private) == 0 {
-		return nil
-	}
-	home := "/root"
-	u, err := user.Current()
-	if err == nil {
-		home = u.HomeDir
-	}
-	sshpath := filepath.Join(home, ".ssh")
-	if err := os.MkdirAll(sshpath, 0700); err != nil {
-		return err
-	}
-	confpath := filepath.Join(sshpath, "config")
-	privpath := filepath.Join(sshpath, "id_rsa")
-	ioutil.WriteFile(confpath, []byte("StrictHostKeyChecking no\n"), 0700)
-	return ioutil.WriteFile(privpath, []byte(in.Keys.Private), 0600)
-}
-
-func isDirEmpty(name string) bool {
-	f, err := os.Open(name)
+// isDirEmpty returns true if the directory is empty. This is used to determine
+// if the .git repository has been initialized yet.
+func isDirEmpty(dir string) bool {
+	f, err := os.Open(dir)
 	if err != nil {
 		return true
 	}
 	defer f.Close()
 
 	_, err = f.Readdir(1)
-	if err == io.EOF {
-		return true
+	return err == io.EOF
+}
+
+// isPullRequest returns true if the event is a pull request event.
+func isPullRequest(event string) bool {
+	return event == "pull_request"
+}
+
+// isTag returns true if the event is a tag event.
+func isTag(event, ref string) bool {
+	return event == "tag" ||
+		strings.HasPrefix(ref, "refs/tags/")
+}
+
+//
+//
+//
+//
+//
+
+func main2() {
+
+	app := cli.NewApp()
+	app.Name = "git"
+	app.Usage = "git clone plugin"
+	app.Action = run
+	app.Flags = []cli.Flag{
+		cli.StringFlag{
+			Name:   "remote",
+			Usage:  "git remote url",
+			EnvVar: "CI_REMOTE_URL",
+		},
+		cli.StringFlag{
+			Name:   "path",
+			Usage:  "git clone path",
+			EnvVar: "CI_WORKSPACE",
+		},
+		cli.StringFlag{
+			Name:   "sha",
+			Usage:  "git commit sha",
+			EnvVar: "CI_COMMIT_SHA",
+		},
+		cli.StringFlag{
+			Name:   "ref",
+			Value:  "refs/heads/master",
+			Usage:  "git commit ref",
+			EnvVar: "CI_COMMIT_REF",
+		},
+		cli.StringFlag{
+			Name:   "event",
+			Value:  "push",
+			Usage:  "build event",
+			EnvVar: "CI_BUILD_EVENT",
+		},
+		cli.StringFlag{
+			Name:   "number",
+			Usage:  "build number",
+			EnvVar: "CI_BUILD_NUMBER",
+		},
+		cli.StringFlag{
+			Name:   "netrc.machine",
+			Usage:  "netrc machine",
+			EnvVar: "CI_NETRC_MACHINE",
+		},
+		cli.StringFlag{
+			Name:   "netrc.username",
+			Usage:  "netrc username",
+			EnvVar: "CI_NETRC_USERNAME",
+		},
+		cli.StringFlag{
+			Name:   "netrc.password",
+			Usage:  "netrc password",
+			EnvVar: "CI_NETRC_PASSWORD",
+		},
+		cli.IntFlag{
+			Name:   "depth",
+			Usage:  "clone depth",
+			EnvVar: "PLUGIN_RECURSIVE",
+		},
+		cli.BoolTFlag{
+			Name:   "recursive",
+			Usage:  "clone submodules",
+			EnvVar: "PLUGIN_RECURSIVE",
+		},
+		cli.BoolFlag{
+			Name:   "tags",
+			Usage:  "clone tags",
+			EnvVar: "PLUGIN_TAGS",
+		},
+		cli.BoolFlag{
+			Name:   "skip-verify",
+			Usage:  "skip tls verification",
+			EnvVar: "PLUGIN_SKIP_VERIFY",
+		},
+		cli.BoolFlag{
+			Name:   "submodule-update-remote",
+			Usage:  "update remote submodules",
+			EnvVar: "PLUGIN_SUBMODULES_UPDATE_REMOTE",
+		},
+		// cli.Flag{
+		// 	Name:   "submodule-override",
+		// 	Desc:   "json map of submodule overrides",
+		// 	EnvVar: "SUBMODULE_OVERRIDE",
+		// },
 	}
-	return false
+	app.Run(os.Args)
+
 }
 
-func isPullRequest(b *plugin.Build) bool {
-	return b.Event == plugin.EventPull
+func run(c *cli.Context) {
+	// plugin := Plugin{}
+	// plugin.Repo.Clone = c.String("remote")
+	// plugin.Build.Commit = c.String("sha")
+	// plugin.Build.Event = c.String("event")
+	// plugin.Build.Number = c.Int("number")
+	// plugin.Build.Path = c.String("path")
+	// plugin.Build.Ref = c.String("ref")
+	// plugin.Netrc.Login = c.String("netrc.login")
+	// plugin.Netrc.Machine = c.String("netrc.machine")
+	// plugin.Netrc.Password = c.String("netrc.password")
+	// plugin.Config.Depth = c.Int("depth")
+	// plugin.Config.Recursive = c.BoolT("recursive")
+	// plugin.Config.SkipVerify = c.Bool("skip-verify")
+	// plugin.Config.SubmoduleRemote = c.Bool("submodule-override")
+	// // plugin.Config.Submodules = c.String("submodule-override")
+
+	// if err := plugin.Exec(); err != nil {
+	// 	fmt.Println(err)
+	// 	os.Exit(1)
+	// }
+
+	_ = Plugin2{
+		Repo: Repo{
+			Clone: c.String("remote"),
+		},
+		Build: Build{
+			Commit: c.String("sha"),
+			Event:  c.String("event"),
+			Number: c.Int("number"),
+			Path:   c.String("path"),
+			Ref:    c.String("ref"),
+		},
+		Netrc: Netrc{
+			Login:    c.String("netrc.login"),
+			Machine:  c.String("netrc.machine"),
+			Password: c.String("netrc.password"),
+		},
+		Config: Config{
+			Depth:           c.Int("depth"),
+			Recursive:       c.BoolT("recursive"),
+			SkipVerify:      c.Bool("skip-verify"),
+			SubmoduleRemote: c.Bool("submodule-update-remote"),
+		},
+	}
+
 }
 
-func isTag(b *plugin.Build) bool {
-	return b.Event == plugin.EventTag ||
-		strings.HasPrefix(b.Ref, "refs/tags/")
-}
+type (
+	Repo struct {
+		Clone string
+	}
+
+	Build struct {
+		Path   string
+		Event  string
+		Number int
+		Commit string
+		Ref    string
+	}
+
+	Netrc struct {
+		Machine  string
+		Login    string
+		Password string
+	}
+
+	Config struct {
+		Depth           int
+		Recursive       bool
+		SkipVerify      bool
+		Tags            bool
+		Submodules      map[string]string
+		SubmoduleRemote bool
+	}
+
+	Plugin2 struct {
+		Repo   Repo
+		Build  Build
+		Netrc  Netrc
+		Config Config
+	}
+)
