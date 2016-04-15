@@ -15,12 +15,14 @@ type Plugin struct {
 }
 
 func (p Plugin) Exec() error {
-	err := os.MkdirAll(p.Build.Path, 0777)
-	if err != nil {
-		return err
+	if p.Build.Path != "" {
+		err := os.MkdirAll(p.Build.Path, 0777)
+		if err != nil {
+			return err
+		}
 	}
 
-	err = writeNetrc(p.Netrc.Login, p.Netrc.Login, p.Netrc.Password)
+	err := writeNetrc(p.Netrc.Login, p.Netrc.Login, p.Netrc.Password)
 	if err != nil {
 		return err
 	}
