@@ -105,9 +105,9 @@ func run(c *cli.Context) {
 			Clone: c.String("remote"),
 		},
 		Build: Build{
+			Number: c.Int("number"),
 			Commit: c.String("sha"),
 			Event:  c.String("event"),
-			Number: c.Int("number"),
 			Path:   c.String("path"),
 			Ref:    c.String("ref"),
 		},
