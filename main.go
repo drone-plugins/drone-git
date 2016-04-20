@@ -7,61 +7,56 @@ import (
 	"github.com/codegangsta/cli"
 )
 
-var version = "1.0.0" // auto-generated version number
+var build string // build number set at compile-time
 
 func main() {
 	app := cli.NewApp()
 	app.Name = "git"
 	app.Usage = "git clone plugin"
 	app.Action = run
-	app.Version = version
+	app.Version = "1.0.0+" + build
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:   "remote",
 			Usage:  "git remote url",
-			EnvVar: "CI_REMOTE_URL",
+			EnvVar: "DRONE_REMOTE_URL",
 		},
 		cli.StringFlag{
 			Name:   "path",
 			Usage:  "git clone path",
-			EnvVar: "CI_WORKSPACE",
+			EnvVar: "DRONE_WORKSPACE",
 		},
 		cli.StringFlag{
 			Name:   "sha",
 			Usage:  "git commit sha",
-			EnvVar: "CI_COMMIT_SHA",
+			EnvVar: "DRONE_COMMIT_SHA",
 		},
 		cli.StringFlag{
 			Name:   "ref",
 			Value:  "refs/heads/master",
 			Usage:  "git commit ref",
-			EnvVar: "CI_COMMIT_REF",
+			EnvVar: "DRONE_COMMIT_REF",
 		},
 		cli.StringFlag{
 			Name:   "event",
 			Value:  "push",
 			Usage:  "build event",
-			EnvVar: "CI_BUILD_EVENT",
-		},
-		cli.StringFlag{
-			Name:   "number",
-			Usage:  "build number",
-			EnvVar: "CI_BUILD_NUMBER",
+			EnvVar: "DRONE_BUILD_EVENT",
 		},
 		cli.StringFlag{
 			Name:   "netrc.machine",
 			Usage:  "netrc machine",
-			EnvVar: "CI_NETRC_MACHINE",
+			EnvVar: "DRONE_NETRC_MACHINE",
 		},
 		cli.StringFlag{
 			Name:   "netrc.username",
 			Usage:  "netrc username",
-			EnvVar: "CI_NETRC_USERNAME",
+			EnvVar: "DRONE_NETRC_USERNAME",
 		},
 		cli.StringFlag{
 			Name:   "netrc.password",
 			Usage:  "netrc password",
-			EnvVar: "CI_NETRC_PASSWORD",
+			EnvVar: "DRONE_NETRC_PASSWORD",
 		},
 		cli.IntFlag{
 			Name:   "depth",
@@ -105,7 +100,6 @@ func run(c *cli.Context) {
 			Clone: c.String("remote"),
 		},
 		Build: Build{
-			Number: c.Int("number"),
 			Commit: c.String("sha"),
 			Event:  c.String("event"),
 			Path:   c.String("path"),
