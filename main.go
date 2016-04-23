@@ -106,7 +106,7 @@ func run(c *cli.Context) {
 			Ref:    c.String("ref"),
 		},
 		Netrc: Netrc{
-			Login:    c.String("netrc.login"),
+			Login:    c.String("netrc.username"),
 			Machine:  c.String("netrc.machine"),
 			Password: c.String("netrc.password"),
 		},
