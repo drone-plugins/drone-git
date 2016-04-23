@@ -22,7 +22,7 @@ func (p Plugin) Exec() error {
 		}
 	}
 
-	err := writeNetrc(p.Netrc.Login, p.Netrc.Login, p.Netrc.Password)
+	err := writeNetrc(p.Netrc.Machine, p.Netrc.Login, p.Netrc.Password)
 	if err != nil {
 		return err
 	}
