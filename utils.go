@@ -14,7 +14,7 @@ import (
 // trace writes the command in the programs stdout for debug purposes.
 // the command is wrapped in xml tags for easy parsing.
 func trace(cmd *exec.Cmd) {
-	fmt.Printf("<command>%s</command>\n", strings.Join(cmd.Args, " "))
+	fmt.Printf("+ %s\n", strings.Join(cmd.Args, " "))
 }
 
 // helper function returns true if directory dir is empty.
@@ -51,6 +51,7 @@ func writeNetrc(machine, login, password string) error {
 		login,
 		password,
 	)
+
 	home := "/root"
 	u, err := user.Current()
 	if err == nil {
