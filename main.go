@@ -61,7 +61,7 @@ func main() {
 		cli.IntFlag{
 			Name:   "depth",
 			Usage:  "clone depth",
-			EnvVar: "PLUGIN_RECURSIVE",
+			EnvVar: "PLUGIN_DEPTH",
 		},
 		cli.BoolTFlag{
 			Name:   "recursive",
