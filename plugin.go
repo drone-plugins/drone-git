@@ -165,6 +165,7 @@ func remapSubmodule(name, url string) *exec.Cmd {
 	return exec.Command(
 		"git",
 		"config",
+		"--global",
 		name,
 		url,
 	)
