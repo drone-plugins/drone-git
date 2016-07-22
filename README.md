@@ -1,17 +1,18 @@
 # drone-git
 
 [![Build Status](http://beta.drone.io/api/badges/drone-plugins/drone-git/status.svg)](http://beta.drone.io/drone-plugins/drone-git)
-[![Coverage Status](https://aircover.co/badges/drone-plugins/drone-git/coverage.svg)](https://aircover.co/drone-plugins/drone-git)
-[![Image Size](https://badge.imagelayers.io/plugins/git:latest.svg)](https://imagelayers.io/?images=plugins/git:latest)
+[![Go Doc](https://godoc.org/github.com/drone-plugins/drone-git?status.svg)](http://godoc.org/github.com/drone-plugins/drone-git)
+[![Go Report](https://goreportcard.com/badge/github.com/drone-plugins/drone-git)](https://goreportcard.com/report/github.com/drone-plugins/drone-git)
+[![Join the chat at https://gitter.im/drone/drone](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/drone/drone)
 
-Drone plugin to clone `git` repositories. For the usage information and a listing of the available options please take a look at [the docs](DOCS.md).
+Drone plugin to clone `git` repositories. For the usage information and a
+listing of the available options please take a look at [the docs](DOCS.md).
 
 ## Build
 
 Build the binary with the following commands:
 
 ```
-export GO15VENDOREXPERIMENT=1
 go build
 go test
 ```
@@ -21,11 +22,12 @@ go test
 Build the docker image with the following commands:
 
 ```
-export GO15VENDOREXPERIMENT=1
-GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -tags netgo
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -tags netgo
+docker build --rm=true -t plugins/git .
 ```
 
-Please note incorrectly building the image for the correct x64 linux and with GCO disabled will result in an error when running the Docker image:
+Please note incorrectly building the image for the correct x64 linux and with
+GCO disabled will result in an error when running the Docker image:
 
 ```
 docker: Error response from daemon: Container command
