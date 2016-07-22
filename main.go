@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/codegangsta/cli"
+	"github.com/urfave/cli"
 )
 
 var build string // build number set at compile-time
