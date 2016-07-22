@@ -1,20 +1,22 @@
+workspace:
+  base: /go
+
 pipeline:
   test:
     image: golang:1.6
     environment:
       - CGO_ENABLED=0
-      - GO15VENDOREXPERIMENT=1
-      - GOPATH=/drone
     commands:
       - go vet
       - go test -cover -coverprofile=coverage.out
       - go build -ldflags "-s -w -X main.build=$DRONE_BUILD_NUMBER"
-  docker:
-    storage_driver: overlay
+
+  latest:
+    image: docker
     repo: plugins/git
-    tag: [ "latest", "1.0", "1" ]
+    tags: [ "latest", "1.0", "1" ]
     when:
-      branch: release/0.5-alt
+      branch: master
       event: push
 
 plugin:
