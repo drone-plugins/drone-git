@@ -1,38 +1,36 @@
-Use the Git plugin to clone a git repository. Note that Drone uses the Git plugin
-by default for all repositories, without any configuration required. You can override
-the default configuration with the following parameters:
+Use the Git plugin to clone a git repository. Note that Drone uses the Git
+plugin by default for all repositories, without any configuration required.
 
-* `depth` - creates a shallow clone with truncated history
-* `recursive` - recursively clones git submodules
-* `path` - relative path inside `/drone/src` where the repository is cloned
-* `skip_verify` - disables ssl verification when set to `true`
-* `tags` - fetches tags when set to `true`
-* `submodule_override` - override submodule urls
-* `submodule_update_remote` - pass the `--remote` flag to git submodule update (useful when tracking a branch instead of a commit in a submodule)
+## Config
 
-Sample configuration:
+The following parameters are used to configure the plugin:
+
+* **depth** - creates a shallow clone with truncated history
+* **recursive** - recursively clones git submodules
+* **path** - relative path inside `/drone/src` where the repository is cloned
+* **skip_verify** - disables ssl verification when set to `true`
+* **tags** - fetches tags when set to `true`
+* **submodule_override** - override submodule urls
+* **submodule_update_remote** - pass the `--remote` flag to git submodule update (useful when tracking a branch instead of a commit in a submodule)
+
+## Examples
+
+Simple configurtion with different defaults:
 
 ```yaml
-clone:
-  depth: 50
-  recursive: false
-  tags: false
-```
-
-Sample configuration to override the relative clone path:
-
-```
-# clones to /drone/src/foo/bar
-
-clone:
-  path: foo/bar
+pipeline:
+  clone:
+    depth: 50
+    recursive: false
+    tags: false
 ```
 
 Sample configuration to clone submodules:
 
 ```
-clone:
-  recursive: true
+pipeline:
+  clone:
+    recursive: true
 ```
 
 ## Private Submodules
@@ -56,10 +54,12 @@ This happens when a private submodule uses a `git+ssh` url:
 This can be mitigated by overriding the submodule url to use `git+https`:
 
 ```
-clone:
-  recursive: true
-  submodule_override:
-    hello-world: https://github.com/octocat/hello-world.git
+pipeline:
+  clone:
+    recursive: true
+    submodule_override:
+      hello-world: https://github.com/octocat/hello-world.git
 ```
 
-Overriding the submodule url to force `git+https` allows us to take advantage of the `netrc` file and automatically authenticate to the submodule repository.
+Overriding the submodule url to force `git+https` allows us to take advantage
+of the `netrc` file and automatically authenticate to the submodule repository.

@@ -1,9 +1,13 @@
-# Docker image for Drone's git-clone plugin (armhf architecture)
-#
-#     CGO_ENABLED=0 go build -a -tags netgo
-#     docker build --rm=true -f Dockerfile.armhf -t plugins/git:armhf .
+FROM armhfbuild/alpine:3.4
 
-FROM armhfbuild/alpine:3.2
-RUN apk add -U ca-certificates git openssh curl perl && rm -rf /var/cache/apk/*
+RUN apk update && \
+  apk add \
+    ca-certificates \
+    git \
+    openssh \
+    curl \
+    perl && \
+  rm -rf /var/cache/apk/*
+
 ADD drone-git /bin/
 ENTRYPOINT ["/bin/drone-git"]
