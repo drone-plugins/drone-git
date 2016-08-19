@@ -20,6 +20,7 @@ Simple configurtion with different defaults:
 ```yaml
 pipeline:
   clone:
+    image: plugins/git
     depth: 50
     recursive: false
     tags: false
@@ -30,6 +31,7 @@ Sample configuration to clone submodules:
 ```
 pipeline:
   clone:
+    image: plugins/git
     recursive: true
 ```
 
@@ -56,6 +58,7 @@ This can be mitigated by overriding the submodule url to use `git+https`:
 ```
 pipeline:
   clone:
+    image: plugins/git
     recursive: true
     submodule_override:
       hello-world: https://github.com/octocat/hello-world.git
