@@ -1,20 +1,21 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/urfave/cli"
+	"github.com/joho/godotenv"
 )
 
-var build string // build number set at compile-time
+var version string // build number set at compile-time
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "git"
-	app.Usage = "git clone plugin"
+	app.Name = "git plugin"
+	app.Usage = "git plugin"
 	app.Action = run
-	app.Version = "1.0.0+" + build
+	app.Version = version
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:   "remote",
@@ -89,12 +90,23 @@ func main() {
 			EnvVar: "PLUGIN_SUBMODULE_OVERRIDE",
 			Value:  &MapFlag{},
 		},
+		cli.StringFlag{
+			Name:  "env-file",
+			Usage: "source env file",
+		},
 	}
-	app.Run(os.Args)
+
+	if err := app.Run(os.Args); err != nil {
+		logrus.Fatal(err)
+	}
 
 }
 
-func run(c *cli.Context) {
+func run(c *cli.Context) error {
+	if c.String("env-file") != "" {
+		_ = godotenv.Load(c.String("env-file"))
+	}
+
 	plugin := Plugin{
 		Repo: Repo{
 			Clone: c.String("remote"),
@@ -119,8 +131,5 @@ func run(c *cli.Context) {
 		},
 	}
 
-	if err := plugin.Exec(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	return plugin.Exec()
 }
