@@ -1,21 +1,22 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/urfave/cli"
 	"github.com/joho/godotenv"
+	"github.com/urfave/cli"
 )
 
-var version string // build number set at compile-time
+var build = "0" // build number set at compile-time
 
 func main() {
 	app := cli.NewApp()
 	app.Name = "git plugin"
 	app.Usage = "git plugin"
 	app.Action = run
-	app.Version = version
+	app.Version = fmt.Sprintf("1.0.%s", build)
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:   "remote",
