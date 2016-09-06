@@ -125,6 +125,7 @@ func run(c *cli.Context) error {
 		},
 		Config: Config{
 			Depth:           c.Int("depth"),
+			Tags:            c.Bool("tags"),
 			Recursive:       c.BoolT("recursive"),
 			SkipVerify:      c.Bool("skip-verify"),
 			SubmoduleRemote: c.Bool("submodule-update-remote"),
