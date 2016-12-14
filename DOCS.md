@@ -1,45 +1,44 @@
-Use the Git plugin to clone a git repository. Note that Drone uses the Git
-plugin by default for all repositories, without any configuration required.
+---
+date: 2016-01-01T00:00:00+00:00
+title: Git
+author: drone-plugins
+tags: [ git, clone ]
+repo: drone-plugins/drone-git
+image: plugins/git
+---
 
-## Config
-
-The following parameters are used to configure the plugin:
-
-* **depth** - creates a shallow clone with truncated history
-* **recursive** - recursively clones git submodules
-* **path** - relative path inside `/drone/src` where the repository is cloned
-* **skip_verify** - disables ssl verification when set to `true`
-* **tags** - fetches tags when set to `true`
-* **submodule_override** - override submodule urls
-* **submodule_update_remote** - pass the `--remote` flag to git submodule update (useful when tracking a branch instead of a commit in a submodule)
-
-## Examples
-
-Simple configurtion with different defaults:
+The git plugin is used to clone a git repository. Note that Drone uses the git plugin by default for all repositories, without any configuration required.
 
 ```yaml
 pipeline:
   clone:
     image: plugins/git
     depth: 50
-    recursive: false
-    tags: false
 ```
 
-Sample configuration to clone submodules:
+Sample configuration to recursively clone submodules:
 
-```
+```diff
 pipeline:
   clone:
     image: plugins/git
-    recursive: true
++   recursive: true
 ```
 
-## Private Submodules
+Sample configuration to recursively clone tags:
+
+```diff
+pipeline:
+  clone:
+    image: plugins/git
++   tags: true
+```
+
+# Private Submodules
 
 Private submodules may encounter the following error:
 
-```
+```nohighlight
 Warning: Permanently added 'github.com,192.30.252.130' (RSA) to the list of known hosts.
 ERROR: Repository not found.
 fatal: Could not read from remote repository.
@@ -47,7 +46,7 @@ fatal: Could not read from remote repository.
 
 This happens when a private submodule uses a `git+ssh` url:
 
-```
+```nohighlight
 [submodule "hello-world"]
     path = hello-world
     url = git@github.com:octocat/hello-world.git
@@ -55,14 +54,31 @@ This happens when a private submodule uses a `git+ssh` url:
 
 This can be mitigated by overriding the submodule url to use `git+https`:
 
-```
+```diff
 pipeline:
   clone:
     image: plugins/git
     recursive: true
-    submodule_override:
-      hello-world: https://github.com/octocat/hello-world.git
++   submodule_override:
++     hello-world: https://github.com/octocat/hello-world.git
 ```
 
-Overriding the submodule url to force `git+https` allows us to take advantage
-of the `netrc` file and automatically authenticate to the submodule repository.
+# Parameter Reference
+
+depth
+: creates a shallow clone with truncated history
+
+recursive
+: recursively clones git submodules
+
+skip_verify
+: disables ssl verification when set to `true`
+
+tags
+: fetches tags when set to `true`
+
+submodule_override
+: override submodule urls
+
+submodule_update_remote
+: pass the `--remote` flag to git submodule update
