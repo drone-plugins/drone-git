@@ -83,7 +83,7 @@ func main() {
 		cli.BoolFlag{
 			Name:   "submodule-update-remote",
 			Usage:  "update remote submodules",
-			EnvVar: "PLUGIN_SUBMODULES_UPDATE_REMOTE",
+			EnvVar: "PLUGIN_SUBMODULES_UPDATE_REMOTE,PLUGIN_SUBMODULE_UPDATE_REMOTE",
 		},
 		cli.GenericFlag{
 			Name:   "submodule-override",
