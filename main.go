@@ -16,7 +16,7 @@ func main() {
 	app.Name = "git plugin"
 	app.Usage = "git plugin"
 	app.Action = run
-	app.Version = fmt.Sprintf("1.0.%s", build)
+	app.Version = fmt.Sprintf("1.1.%s", build)
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:   "remote",
