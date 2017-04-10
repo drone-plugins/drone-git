@@ -36,4 +36,4 @@ RUN Write-Host ('Downloading {0} ...' -f $env:GIT_DOWNLOAD_URL); \
 	Write-Host 'Complete.';
 
 ADD drone-git.exe C:/
-# ENTRYPOINT C:/drone-git.exe
+ENTRYPOINT C:/drone-git.exe
