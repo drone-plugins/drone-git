@@ -1,0 +1,39 @@
+FROM microsoft/nanoserver
+
+# $ProgressPreference: https://github.com/PowerShell/PowerShell/issues/2138#issuecomment-251261324
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+
+# Install MinGit
+# https://blogs.msdn.microsoft.com/visualstudioalm/2016/09/03/whats-new-in-git-for-windows-2-10/
+ENV GIT_VERSION 2.12.2
+ENV GIT_BUILD 2
+ENV GIT_TAG v${GIT_VERSION}.windows.${GIT_BUILD}
+ENV GIT_DOWNLOAD_URL https://github.com/git-for-windows/git/releases/download/${GIT_TAG}/MinGit-${GIT_VERSION}.${GIT_BUILD}-64-bit.zip
+ENV GIT_DOWNLOAD_SHA256 3918cd9ab42c9a22aa3934463fdb536485c84e6876e9aaab74003deb43a08a36
+
+RUN Write-Host ('Downloading {0} ...' -f $env:GIT_DOWNLOAD_URL); \
+	Invoke-WebRequest -Uri $env:GIT_DOWNLOAD_URL -OutFile 'git.zip'; \
+	\
+	Write-Host ('Verifying sha256 ({0}) ...' -f $env:GIT_DOWNLOAD_SHA256); \
+	if ((Get-FileHash git.zip -Algorithm sha256).Hash -ne $env:GIT_DOWNLOAD_SHA256) { \
+		Write-Host 'FAILED!'; \
+		exit 1; \
+	}; \
+	\
+	Write-Host 'Expanding ...'; \
+	Expand-Archive -Path git.zip -DestinationPath C:\git\.; \
+	\
+	Write-Host 'Removing ...'; \
+	Remove-Item git.zip -Force; \
+	\
+	Write-Host 'Updating PATH ...'; \
+	$env:PATH = 'C:\git\cmd;C:\git\mingw64\bin;C:\git\usr\bin;' + $env:PATH; \
+  Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH -Value $env:PATH; \
+	\
+	Write-Host 'Verifying install ...'; \
+	Write-Host '  git --version'; git --version; \
+	\
+	Write-Host 'Complete.';
+
+ADD drone-git.exe C:/
+# ENTRYPOINT C:/drone-git.exe
