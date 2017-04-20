@@ -6,7 +6,7 @@
 [![Join the chat at https://gitter.im/drone/drone](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/drone/drone)
 
 Drone plugin to clone `git` repositories. For the usage information and a
-listing of the available options please take a look at [the docs](DOCS.md).
+listing of the available options please take a look at [the docs](http://plugins.drone.io/drone-plugins/drone-git).
 
 ## Build
 
