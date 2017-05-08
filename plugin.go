@@ -38,6 +38,10 @@ func (p Plugin) Exec() error {
 		cmds = append(cmds, remote(p.Repo.Clone))
 	}
 
+        if p.Config.ShowConfig {
+                cmds = append(cmds,showConfig())
+        }
+
 	switch {
 	case isPullRequest(p.Build.Event) || isTag(p.Build.Event, p.Build.Ref):
 		cmds = append(cmds, fetch(p.Build.Ref, p.Config.Tags, p.Config.Depth))
@@ -67,6 +71,16 @@ func (p Plugin) Exec() error {
 	}
 
 	return nil
+}
+
+// Shows config for debug purposes.
+
+func showConfig() *exec.Cmd {
+	return exec.Command(
+		"git",
+		"config",
+		"--list",
+	)
 }
 
 // Creates an empty git repository.

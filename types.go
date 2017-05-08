@@ -24,6 +24,7 @@ type (
 	Config struct {
 		Depth           int
 		Recursive       bool
+		ShowConfig	bool
 		SkipVerify      bool
 		Tags            bool
 		Submodules      map[string]string

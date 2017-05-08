@@ -76,6 +76,11 @@ func main() {
 			EnvVar: "PLUGIN_TAGS",
 		},
 		cli.BoolFlag{
+			Name:	"show-config",
+			Usage:	"Shows git config",
+			EnvVar:	"PLUGIN_SHOW_CONFIG",
+		},
+		cli.BoolFlag{
 			Name:   "skip-verify",
 			Usage:  "skip tls verification",
 			EnvVar: "PLUGIN_SKIP_VERIFY",
@@ -127,6 +132,7 @@ func run(c *cli.Context) error {
 			Depth:           c.Int("depth"),
 			Tags:            c.Bool("tags"),
 			Recursive:       c.BoolT("recursive"),
+			ShowConfig:	 c.Bool("show-config"),
 			SkipVerify:      c.Bool("skip-verify"),
 			SubmoduleRemote: c.Bool("submodule-update-remote"),
 			Submodules:      c.Generic("submodule-override").(*MapFlag).Get(),
