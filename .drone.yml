@@ -14,7 +14,7 @@ pipeline:
   publish:
     image: plugins/docker
     repo: plugins/git
-    tags: [ "latest", "1.1", "1" ]
+    tags: [ "latest", "1.2", "1" ]
     when:
       branch: master
       event: push
