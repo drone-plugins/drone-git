@@ -62,6 +62,7 @@ func main() {
 		},
 		cli.IntFlag{
 			Name:   "depth",
+			Value:	1,
 			Usage:  "clone depth",
 			EnvVar: "PLUGIN_DEPTH",
 		},
