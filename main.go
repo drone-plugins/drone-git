@@ -21,34 +21,34 @@ func main() {
 		cli.StringFlag{
 			Name:   "remote",
 			Usage:  "git remote url",
-			EnvVar: "DRONE_REMOTE_URL",
+			EnvVar: "PLUGIN_REMOTE,DRONE_REMOTE_URL",
 		},
 		cli.StringFlag{
 			Name:   "path",
 			Usage:  "git clone path",
-			EnvVar: "DRONE_WORKSPACE",
+			EnvVar: "PLUGIN_WORKSPACE,DRONE_WORKSPACE",
 		},
 		cli.StringFlag{
 			Name:   "sha",
 			Usage:  "git commit sha",
-			EnvVar: "DRONE_COMMIT_SHA",
+			EnvVar: "PLUGIN_SHA,DRONE_COMMIT_SHA",
 		},
 		cli.StringFlag{
 			Name:   "ref",
 			Value:  "refs/heads/master",
 			Usage:  "git commit ref",
-			EnvVar: "DRONE_COMMIT_REF",
+			EnvVar: "PLUGIN_REF,DRONE_COMMIT_REF",
 		},
 		cli.StringFlag{
 			Name:   "event",
 			Value:  "push",
 			Usage:  "build event",
-			EnvVar: "DRONE_BUILD_EVENT",
+			EnvVar: "PLUGIN_EVENT,DRONE_BUILD_EVENT",
 		},
 		cli.StringFlag{
 			Name:   "netrc.machine",
 			Usage:  "netrc machine",
-			EnvVar: "DRONE_NETRC_MACHINE",
+			EnvVar: "PLUGIN_NETRC_MACHINE,DRONE_NETRC_MACHINE",
 		},
 		cli.StringFlag{
 			Name:   "netrc.username",
