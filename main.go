@@ -95,12 +95,12 @@ func main() {
 			Name:  "env-file",
 			Usage: "source env file",
 		},
-    cli.GenericFlag{
-      Name:  "set-protocol",
-      Usage: "json map of source and destination",
-      EnvVar:"PLUGIN_SET_PROTOCOL",
-      Value: &MapFlag{},
-    },
+		cli.GenericFlag{
+			Name:  "set-protocol",
+			Usage: "json map of source and destination",
+			EnvVar:"PLUGIN_SET_PROTOCOL",
+			Value: &MapFlag{},
+		},
 	}
 
 	if err := app.Run(os.Args); err != nil {
@@ -133,7 +133,7 @@ func run(c *cli.Context) error {
 			Depth:           c.Int("depth"),
 			Tags:            c.Bool("tags"),
 			Recursive:       c.BoolT("recursive"),
-      SetProtocol:     c.Generic("set-protocol").(*MapFlag).Get(),
+			SetProtocol:     c.Generic("set-protocol").(*MapFlag).Get(),
 			SkipVerify:      c.Bool("skip-verify"),
 			SubmoduleRemote: c.Bool("submodule-update-remote"),
 			Submodules:      c.Generic("submodule-override").(*MapFlag).Get(),

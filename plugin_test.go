@@ -306,30 +306,28 @@ func TestUpdateSubmodulesRemote(t *testing.T) {
 // TestSetProtocol tests if the arguments to `git config --global` 
 // are constructed properly.
 func TestSetProtocol(t *testing.T) {
-  testdata := []struct {
-    exp []string
-  }{
-    {
-      []string{
-        "git",
-        "config",
-        "--global",
-        "url.\"https://github.com\".insteadOf",
-        "git@github.com:",
-      },
-    },
-  }
-  for _, td := range testdata {
-    c := setProtocol("git@github.com:", "https://github.com")
-    if len(c.Args) != len(td.exp) {
-      t.Errorf("Expected: %s, got %s", td.exp, c.Args)
-    }
-    for i := range c.Args {
-      if c.Args[i] != td.exp[i] {
-        t.Errorf("Expected: %s, got %s", td.exp, c.Args)
-      }
-    }
-  }
+	testdata := []struct {
+		exp []string
+	}{
+		[]string{
+		"git",
+		"config",
+		"--global",
+		"url.\"https://github.com\".insteadOf",
+		"git@github.com:",
+		},
+	}
+	for _, td := range testdata {
+		c := setProtocol("git@github.com:", "https://github.com")
+		if len(c.Args) != len(td.exp) {
+			t.Errorf("Expected: %s, got %s", td.exp, c.Args)
+		}
+		for i := range c.Args {
+			if c.Args[i] != td.exp[i] {
+				t.Errorf("Expected: %s, got %s", td.exp, c.Args)
+			}
+		}
+	}
 }
 
 // helper function that will setup a temporary workspace.

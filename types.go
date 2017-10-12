@@ -26,7 +26,7 @@ type (
 		Recursive       bool
 		SkipVerify      bool
 		Tags            bool
-    SetProtocol     map[string]string
+		SetProtocol     map[string]string
 		Submodules      map[string]string
 		SubmoduleRemote bool
 	}
