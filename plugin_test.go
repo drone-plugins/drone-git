@@ -309,12 +309,14 @@ func TestSetProtocol(t *testing.T) {
 	testdata := []struct {
 		exp []string
 	}{
-		[]string{
-		"git",
-		"config",
-		"--global",
-		"url.\"https://github.com\".insteadOf",
-		"git@github.com:",
+		{
+			[]string{
+			"git",
+			"config",
+			"--global",
+			"url.\"https://github.com\".insteadOf",
+			"git@github.com:",
+			},
 		},
 	}
 	for _, td := range testdata {
