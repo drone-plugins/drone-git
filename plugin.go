@@ -33,6 +33,11 @@ func (p Plugin) Exec() error {
 		cmds = append(cmds, skipVerify())
 	}
 
+  // types.go defines SetProtocol
+  for name, url := range p.Config.SetProtocol {
+    cmds = append(cmds, setProtocol(name, url))
+  }
+
 	if isDirEmpty(filepath.Join(p.Build.Path, ".git")) {
 		cmds = append(cmds, initGit())
 		cmds = append(cmds, remote(p.Repo.Clone))
@@ -170,3 +175,17 @@ func remapSubmodule(name, url string) *exec.Cmd {
 		url,
 	)
 }
+
+// setProtocol returns a git command that, when executed, configures git to
+// override the default protocol.
+func setProtocol(source string, dest string) *exec.Cmd {
+  destination := "url.\"" + dest + "\".insteadOf"
+  return exec.Command(
+    "git",
+    "config",
+    "--global",
+    destination,
+    source,
+  )
+}
+
