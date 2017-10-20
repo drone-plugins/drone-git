@@ -103,7 +103,7 @@ func checkoutSha(commit string) *exec.Cmd {
 	return exec.Command(
 		"git",
 		"checkout",
-		"-q",
+		"-qf",
 		commit,
 	)
 }
