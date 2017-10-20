@@ -13,7 +13,6 @@ type (
 		Number int
 		Commit string
 		Ref    string
-		Branch string
 	}
 
 	Netrc struct {

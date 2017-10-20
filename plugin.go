@@ -15,8 +15,6 @@ type Plugin struct {
 }
 
 func (p Plugin) Exec() error {
-
-	// create the working directory
 	if p.Build.Path != "" {
 		err := os.MkdirAll(p.Build.Path, 0777)
 		if err != nil {
@@ -33,16 +31,6 @@ func (p Plugin) Exec() error {
 
 	if p.Config.SkipVerify {
 		cmds = append(cmds, skipVerify())
-	}
-
-	// clone repository with correct base branch
-	if isDirEmpty(filepath.Join(p.Build.Path, ".git")) {
-		branch := fmt.Sprintf("--branch=%s", p.Build.Branch)
-		cloneCommand := exec.Command("git", "clone", "-q", branch, p.Repo.Clone, p.Build.Path)
-		cloneCommand.Stdout = os.Stdout
-		cloneCommand.Stderr = os.Stderr
-		trace(cloneCommand)
-		cloneCommand.Run()
 	}
 
 	if isDirEmpty(filepath.Join(p.Build.Path, ".git")) {
@@ -115,7 +103,7 @@ func checkoutSha(commit string) *exec.Cmd {
 	return exec.Command(
 		"git",
 		"checkout",
-		"-qf",
+		"-q",
 		commit,
 	)
 }
@@ -179,15 +167,5 @@ func remapSubmodule(name, url string) *exec.Cmd {
 		"--global",
 		name,
 		url,
-	)
-}
-
-// checkoutBranch returns a git command that, when executed checksout the origin/branch
-func checkoutBranch(branch string) *exec.Cmd {
-	branch = fmt.Sprintf("origin/%s", branch)
-	return exec.Command(
-		"git",
-		"checkout",
-		branch,
 	)
 }
