@@ -44,6 +44,7 @@ func (p Plugin) Exec() error {
 		cmds = append(cmds, checkoutHead())
 	default:
 		cmds = append(cmds, fetch(p.Build.Ref, p.Config.Tags, p.Config.Depth))
+		cmds = append(cmds, checkoutBranch(p.Build.Branch))
 		cmds = append(cmds, checkoutSha(p.Build.Commit))
 	}
 
@@ -102,9 +103,8 @@ func checkoutHead() *exec.Cmd {
 func checkoutSha(commit string) *exec.Cmd {
 	return exec.Command(
 		"git",
-		"reset",
-		"--hard",
-		"-q",
+		"checkout",
+		"-qf",
 		commit,
 	)
 }
@@ -168,5 +168,15 @@ func remapSubmodule(name, url string) *exec.Cmd {
 		"--global",
 		name,
 		url,
+	)
+}
+
+// checkoutBranch returns a git command that, when executed checksout the origin/branch
+func checkoutBranch(branch string) *exec.Cmd {
+	branch = fmt.Sprintf("origin/%s", branch)
+	return exec.Command(
+		"git",
+		"checkout",
+		branch,
 	)
 }

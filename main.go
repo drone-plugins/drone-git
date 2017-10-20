@@ -40,6 +40,12 @@ func main() {
 			EnvVar: "PLUGIN_REF,DRONE_COMMIT_REF",
 		},
 		cli.StringFlag{
+			Name:   "branch",
+			Value:  "master",
+			Usage:  "git checkout branch",
+			EnvVar: "PLUGIN_BRANCH,DRONE_COMMIT_BRANCH",
+		},
+		cli.StringFlag{
 			Name:   "event",
 			Value:  "push",
 			Usage:  "build event",
@@ -117,6 +123,7 @@ func run(c *cli.Context) error {
 			Event:  c.String("event"),
 			Path:   c.String("path"),
 			Ref:    c.String("ref"),
+			Branch: c.String("branch"),
 		},
 		Netrc: Netrc{
 			Login:    c.String("netrc.username"),

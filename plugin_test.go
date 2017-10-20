@@ -106,6 +106,7 @@ func TestClone(t *testing.T) {
 				Commit: c.commit,
 				Event:  c.event,
 				Ref:    c.ref,
+				Branch: c.branch,
 			},
 			Config: Config{
 				Recursive: c.recursive,
@@ -141,6 +142,7 @@ func TestCloneNonEmpty(t *testing.T) {
 				Commit: c.commit,
 				Event:  c.event,
 				Ref:    c.ref,
+				Branch: c.branch,
 			},
 			Config: Config{
 				Recursive: c.recursive,
