@@ -15,6 +15,8 @@ type Plugin struct {
 }
 
 func (p Plugin) Exec() error {
+
+	// create the working directory
 	if p.Build.Path != "" {
 		err := os.MkdirAll(p.Build.Path, 0777)
 		if err != nil {
@@ -33,6 +35,16 @@ func (p Plugin) Exec() error {
 		cmds = append(cmds, skipVerify())
 	}
 
+	// clone repository with correct base branch
+	if isDirEmpty(filepath.Join(p.Build.Path, ".git")) {
+		branch := fmt.Sprintf("--branch=%s", p.Build.Branch)
+		cloneCommand := exec.Command("git", "clone", "-q", branch, p.Repo.Clone, p.Build.Path)
+		cloneCommand.Stdout = os.Stdout
+		cloneCommand.Stderr = os.Stderr
+		trace(cloneCommand)
+		cloneCommand.Run()
+	}
+
 	if isDirEmpty(filepath.Join(p.Build.Path, ".git")) {
 		cmds = append(cmds, initGit())
 		cmds = append(cmds, remote(p.Repo.Clone))
@@ -41,11 +53,9 @@ func (p Plugin) Exec() error {
 	switch {
 	case isPullRequest(p.Build.Event) || isTag(p.Build.Event, p.Build.Ref):
 		cmds = append(cmds, fetch(p.Build.Ref, p.Config.Tags, p.Config.Depth))
-		cmds = append(cmds, checkoutBranch(p.Build.Branch))
 		cmds = append(cmds, checkoutHead())
 	default:
 		cmds = append(cmds, fetch(p.Build.Ref, p.Config.Tags, p.Config.Depth))
-		cmds = append(cmds, checkoutBranch(p.Build.Branch))
 		cmds = append(cmds, checkoutSha(p.Build.Commit))
 	}
 

@@ -31,28 +31,28 @@ var commits = []struct {
 		file:   "README",
 		data:   "Hello World!",
 	},
-	// head commit
-	{
-		path:   "octocat/Hello-World",
-		clone:  "https://github.com/octocat/Hello-World.git",
-		event:  "push",
-		branch: "master",
-		commit: "7fd1a60b01f91b314f59955a4e4d4e80d8edf11d",
-		ref:    "refs/heads/master",
-		file:   "README",
-		data:   "Hello World!\n",
-	},
-	// pull request commit
-	{
-		path:   "octocat/Hello-World",
-		clone:  "https://github.com/octocat/Hello-World.git",
-		event:  "pull_request",
-		branch: "master",
-		commit: "553c2077f0edc3d5dc5d17262f6aa498e69d6f8e",
-		ref:    "refs/pull/208/merge",
-		file:   "README",
-		data:   "Goodbye World!\n",
-	},
+	// // head commit
+	// {
+	// 	path:   "octocat/Hello-World",
+	// 	clone:  "https://github.com/octocat/Hello-World.git",
+	// 	event:  "push",
+	// 	branch: "master",
+	// 	commit: "7fd1a60b01f91b314f59955a4e4d4e80d8edf11d",
+	// 	ref:    "refs/heads/master",
+	// 	file:   "README",
+	// 	data:   "Hello World!\n",
+	// },
+	// // pull request commit
+	// {
+	// 	path:   "octocat/Hello-World",
+	// 	clone:  "https://github.com/octocat/Hello-World.git",
+	// 	event:  "pull_request",
+	// 	branch: "master",
+	// 	commit: "553c2077f0edc3d5dc5d17262f6aa498e69d6f8e",
+	// 	ref:    "refs/pull/208/merge",
+	// 	file:   "README",
+	// 	data:   "Goodbye World!\n",
+	// },
 	// branch
 	{
 		path:   "octocat/Hello-World",
@@ -64,29 +64,29 @@ var commits = []struct {
 		file:   "CONTRIBUTING.md",
 		data:   "## Contributing\n",
 	},
-	// tags
-	{
-		path:   "github/mime-types",
-		clone:  "https://github.com/github/mime-types.git",
-		event:  "tag",
-		branch: "master",
-		commit: "553c2077f0edc3d5dc5d17262f6aa498e69d6f8e",
-		ref:    "refs/tags/v1.17",
-		file:   ".gitignore",
-		data:   "*.swp\n*~\n.rake_tasks~\nhtml\ndoc\npkg\npublish\ncoverage\n",
-	},
-	// submodules
-	{
-		path:      "msteinert/drone-git-test-submodule",
-		clone:     "https://github.com/msteinert/drone-git-test-submodule.git",
-		event:     "push",
-		branch:    "master",
-		commit:    "072ae3ddb6883c8db653f8d4432b07c035b93753",
-		ref:       "refs/heads/master",
-		file:      "Hello-World/README",
-		data:      "Hello World!\n",
-		recursive: true,
-	},
+	// // tags
+	// {
+	// 	path:   "github/mime-types",
+	// 	clone:  "https://github.com/github/mime-types.git",
+	// 	event:  "tag",
+	// 	branch: "master",
+	// 	commit: "553c2077f0edc3d5dc5d17262f6aa498e69d6f8e",
+	// 	ref:    "refs/tags/v1.17",
+	// 	file:   ".gitignore",
+	// 	data:   "*.swp\n*~\n.rake_tasks~\nhtml\ndoc\npkg\npublish\ncoverage\n",
+	// },
+	// // submodules
+	// {
+	// 	path:      "msteinert/drone-git-test-submodule",
+	// 	clone:     "https://github.com/msteinert/drone-git-test-submodule.git",
+	// 	event:     "push",
+	// 	branch:    "master",
+	// 	commit:    "072ae3ddb6883c8db653f8d4432b07c035b93753",
+	// 	ref:       "refs/heads/master",
+	// 	file:      "Hello-World/README",
+	// 	data:      "Hello World!\n",
+	// 	recursive: true,
+	// },
 }
 
 // TestClone tests the ability to clone a specific commit into
