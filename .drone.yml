@@ -1,30 +1,42 @@
 workspace:
   base: /go
+  path: src/github.com/drone-plugins/drone-git
 
 pipeline:
   test:
-    image: golang:1.6
-    environment:
-      - CGO_ENABLED=0
+    image: golang:1.9
+    pull: true
     commands:
       - go vet
       - go test -cover -coverprofile=coverage.out
-      - go build -ldflags "-s -w -X main.build=$DRONE_BUILD_NUMBER" -a -tags netgo
 
-  publish:
-    image: plugins/docker
+  build_linux_amd64:
+    image: golang:1.9
+    pull: true
+    group: build
+    environment:
+      - GOOS=linux
+      - GOARCH=amd64
+      - CGO_ENABLED=0
+    commands:
+      - go build -v -ldflags "-X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/amd64/drone-git
+
+  publish_linux_amd64:
+    image: plugins/docker:17.05
+    pull: true
     repo: plugins/git
-    tags: [ "latest", "1.3", "1" ]
+    tags: [ latest, 1.3.0, 1.3, 1 ]
+    secrets: [ docker_username, docker_password ]
+    dockerfile: Dockerfile
     when:
       branch: master
       event: push
 
-plugin:
-  name: Git
-  desc: Clones a git repository
-  type: clone
-  image: plugins/git
-  labels:
-    - scm
-    - vcs
-    - git
+  microbadger:
+    image: plugins/webhook:1
+    pull: true
+    secrets: [ webhook_url ]
+    when:
+      branch: master
+      event: push
+      status: [ success ]
