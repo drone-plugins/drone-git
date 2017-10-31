@@ -48,7 +48,7 @@ var commits = []struct {
 		clone:  "https://github.com/octocat/Hello-World.git",
 		event:  "pull_request",
 		branch: "master",
-		commit: "43617d6cc59d91c7d99909042c19ff122e2597fb",
+		commit: "553c2077f0edc3d5dc5d17262f6aa498e69d6f8e",
 		ref:    "refs/pull/208/merge",
 		file:   "README",
 		data:   "Goodbye World!\n",

@@ -25,7 +25,7 @@ pipeline:
     image: plugins/docker:17.05
     pull: true
     repo: plugins/git
-    tags: [ latest, 1.4.0, 1.4, 1 ]
+    tags: [ latest, 1.3.0, 1.3, 1 ]
     secrets: [ docker_username, docker_password ]
     dockerfile: Dockerfile
     when:
