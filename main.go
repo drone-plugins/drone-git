@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/joho/godotenv"
@@ -91,6 +92,18 @@ func main() {
 			EnvVar: "PLUGIN_SUBMODULE_OVERRIDE",
 			Value:  &MapFlag{},
 		},
+		cli.DurationFlag{
+			Name:   "backoff",
+			Usage:  "backoff duration",
+			EnvVar: "PLUGIN_BACKOFF",
+			Value:  5 * time.Second,
+		},
+		cli.IntFlag{
+			Name:   "backoff-attempts",
+			Usage:  "backoff attempts",
+			EnvVar: "PLUGIN_ATTEMPTS",
+			Value:  5,
+		},
 		cli.StringFlag{
 			Name:  "env-file",
 			Usage: "source env file",
@@ -137,6 +150,10 @@ func run(c *cli.Context) error {
 			SkipVerify:      c.Bool("skip-verify"),
 			SubmoduleRemote: c.Bool("submodule-update-remote"),
 			Submodules:      c.Generic("submodule-override").(*MapFlag).Get(),
+		},
+		Backoff: Backoff{
+			Attempts: c.Int("backoff-attempts"),
+			Duration: c.Duration("backoff"),
 		},
 	}
 

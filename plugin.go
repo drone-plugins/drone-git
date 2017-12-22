@@ -1,17 +1,22 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
+	"time"
 )
 
 type Plugin struct {
-	Repo   Repo
-	Build  Build
-	Netrc  Netrc
-	Config Config
+	Repo    Repo
+	Build   Build
+	Netrc   Netrc
+	Config  Config
+	Backoff Backoff
 }
 
 func (p Plugin) Exec() error {
@@ -60,17 +65,53 @@ func (p Plugin) Exec() error {
 	}
 
 	for _, cmd := range cmds {
+		buf := new(bytes.Buffer)
 		cmd.Dir = p.Build.Path
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
+		cmd.Stdout = io.MultiWriter(os.Stdout, buf)
+		cmd.Stderr = io.MultiWriter(os.Stderr, buf)
 		trace(cmd)
 		err := cmd.Run()
-		if err != nil {
+		switch {
+		case err != nil && shouldRetry(buf.String()):
+			err = retryExec(cmd, p.Backoff.Duration, p.Backoff.Attempts)
+			if err != nil {
+				return err
+			}
+		case err != nil:
 			return err
 		}
 	}
 
 	return nil
+}
+
+// shouldRetry returns true if the command should be re-executed. Currently
+// this only returns true if the remote ref does not exist.
+func shouldRetry(s string) bool {
+	return strings.Contains(s, "find remote ref")
+}
+
+// retryExec is a helper function that retries a command.
+func retryExec(cmd *exec.Cmd, backoff time.Duration, retries int) (err error) {
+	for i := 0; i < retries; i++ {
+		// signal intent to retry
+		fmt.Printf("retry in %v\n", backoff)
+
+		// wait 5 seconds before retry
+		<-time.After(backoff)
+
+		// copy the original command
+		retry := exec.Command(cmd.Args[0], cmd.Args[1:]...)
+		retry.Dir = cmd.Dir
+		retry.Stdout = os.Stdout
+		retry.Stderr = os.Stderr
+		trace(retry)
+		err = retry.Run()
+		if err == nil {
+			return
+		}
+	}
+	return
 }
 
 // Creates an empty git repository.
