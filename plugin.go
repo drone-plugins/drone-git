@@ -21,12 +21,15 @@ type Plugin struct {
 
 func (p Plugin) Exec() error {
 	var err error
-	for i := 0; i < p.Backoff.Attempts ; i++ {
-		fmt.Println("Exec attempt ", i)
+	if p.Config.Attempts > 1 {
+		fmt.Println("We will do up to", p.Config.Attempts,"attempts")
+	}
+	for i := 0; i < p.Config.Attempts; i++ {
 		err = p.ExecActual()
 		if err == nil {
 			return nil
 		}
+		fmt.Println("Global retry attempt", i)
 		os.RemoveAll(p.Build.Path)
 	}
 	return err
@@ -166,14 +169,14 @@ func checkoutSha(commit string) *exec.Cmd {
 // fetch retuns git command that fetches from origin. If tags is true
 // then tags will be fetched.
 func fetch(ref string, tags bool, depth int) *exec.Cmd {
-	tags_option := "--no-tags"
+	tagsOption := "--no-tags"
 	if tags {
-		tags_option = "--tags"
+		tagsOption = "--tags"
 	}
 	cmd := exec.Command(
 		"git",
 		"fetch",
-		tags_option,
+		tagsOption,
 	)
 	if depth != 0 {
 		cmd.Args = append(cmd.Args, fmt.Sprintf("--depth=%d", depth))

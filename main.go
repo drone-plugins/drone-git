@@ -81,6 +81,12 @@ func main() {
 			Usage:  "skip tls verification",
 			EnvVar: "PLUGIN_SKIP_VERIFY",
 		},
+		cli.IntFlag{
+			Name: "attempts",
+			Usage: "clone attempts",
+			EnvVar: "PLUGIN_ATTEMPTS",
+			Value: 1,
+		},
 		cli.BoolFlag{
 			Name:   "submodule-update-remote",
 			Usage:  "update remote submodules",
@@ -138,6 +144,7 @@ func run(c *cli.Context) error {
 		},
 		Config: Config{
 			Depth:           c.Int("depth"),
+			Attempts:        c.Int("attempts"),
 			Tags:            c.Bool("tags"),
 			Recursive:       c.BoolT("recursive"),
 			SkipVerify:      c.Bool("skip-verify"),
