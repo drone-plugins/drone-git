@@ -20,6 +20,19 @@ type Plugin struct {
 }
 
 func (p Plugin) Exec() error {
+	var err error
+	for i := 0; i < p.Backoff.Attempts ; i++ {
+		fmt.Println("Exec attempt ", i)
+		err = p.ExecActual()
+		if err == nil {
+			return nil
+		}
+		os.RemoveAll(p.Build.Path)
+	}
+	return err
+}
+
+func (p Plugin) ExecActual() error {
 	if p.Build.Path != "" {
 		err := os.MkdirAll(p.Build.Path, 0777)
 		if err != nil {
@@ -84,17 +97,7 @@ func (p Plugin) Exec() error {
 // shouldRetry returns true if the command should be re-executed. Currently
 // this only returns true if the remote ref does not exist.
 func shouldRetry(s string) bool {
-	if strings.Contains(s, "is empty") {
-		return true
-	}
-	if strings.Contains(s,"The remote end hung up unexpectedly") {
-		return true
-	}
-	if strings.Contains(s, "find remote ref") {
-		return true
-	}
-	fmt.Sprintln("Did not retry after receiving:", s)
-	return false
+	return strings.Contains(s, "find remote ref")
 }
 
 // retryExec is a helper function that retries a command.
