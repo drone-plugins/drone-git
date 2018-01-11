@@ -84,7 +84,17 @@ func (p Plugin) Exec() error {
 // shouldRetry returns true if the command should be re-executed. Currently
 // this only returns true if the remote ref does not exist.
 func shouldRetry(s string) bool {
-	return strings.Contains(s, "find remote ref")
+	if strings.Contains(s, "is empty") {
+		return true
+	}
+	if strings.Contains(s,"The remote end hung up unexpectedly") {
+		return true
+	}
+	if strings.Contains(s, "find remote ref") {
+		return true
+	}
+	fmt.Sprintln("Did not retry after receiving:", s)
+	return false
 }
 
 // retryExec is a helper function that retries a command.
