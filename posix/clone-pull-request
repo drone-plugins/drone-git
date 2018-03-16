@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -e
+set -x
+
+git clone -b ${DRONE_BRANCH} --single-branch ${DRONE_REMOTE_URL} \
+  ${DRONE_WORKSPACE}
+
+git fetch origin pull/${DRONE_PULL_REQUEST}/head:
+git rebase ${DRONE_COMMIT}

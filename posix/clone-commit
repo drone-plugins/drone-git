@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+set -x
+
+git clone -b ${DRONE_BRANCH} --single-branch ${DRONE_REMOTE_URL} \
+  ${DRONE_WORKSPACE}
+
+git checkout ${DRONE_COMMIT}

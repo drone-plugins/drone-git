@@ -1,0 +1,8 @@
+pipeline:
+  publish:
+    image: plugins/docker
+    repo: plugins/git
+    tags: [ "next" ]
+    secrets: [ docker_username, docker_password ]
+    when:
+      event: push
