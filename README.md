@@ -1,13 +1,12 @@
 An alternate git clone implementation based on this discussion: https://discourse.drone.io/t/planned-change-to-git-clone-logic/1165
 
-
 Build the plugin:
 
 ```
 docker build -t plugins/git:next .
 ```
 
-Test cloning a commit
+Test cloning a commit:
 
 ```
 docker run --rm \
@@ -20,7 +19,7 @@ docker run --rm \
 plugins/git:next
 ```
 
-Test cloning a feature branch
+Test cloning a feature branch:
 
 ```
 docker run --rm \
@@ -33,7 +32,7 @@ docker run --rm \
 plugins/git:next
 ```
 
-Test cloning a tag
+Test cloning a tag:
 
 ```
 docker run --rm \
@@ -45,7 +44,7 @@ docker run --rm \
 plugins/git:next
 ```
 
-Test cloning a pull request
+Test cloning a pull request:
 
 ```
 docker run --rm \
@@ -57,6 +56,16 @@ docker run --rm \
 -e DRONE_COMMIT=26923a8f37933ccc23943de0d4ebd53908268582 \
 -e DRONE_BRANCH=master \
 plugins/git:next
+```
+
+Try the plugin:
+
+```
+clone:
+  git:
+    image: plugins/git:next
+
+pipeline: ...
 ```
 
 This plugin is a work-in-progress and does not support the following features and / or capabilities:
