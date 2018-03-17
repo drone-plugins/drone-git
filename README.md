@@ -72,4 +72,5 @@ This plugin is a work-in-progress and does not support the following features an
 
 * does not work with deployment events
 * does not support depth
-* will not clone submodules
+* only works with github pull requests (hard coded ref)
+* cloning submodules is out of scope
