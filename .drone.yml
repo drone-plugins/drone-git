@@ -1,4 +1,9 @@
 pipeline:
+  test:
+    image: golang
+    commands:
+      - cd posix
+      - go test -v
   publish:
     image: plugins/docker
     repo: plugins/git

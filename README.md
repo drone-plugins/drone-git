@@ -70,7 +70,6 @@ pipeline: ...
 
 This plugin is a work-in-progress and does not support the following features and / or capabilities:
 
-* does not work with caching
 * does not work with deployment events
-* does not support submodules
 * does not support depth
+* will not clone submodules

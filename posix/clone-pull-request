@@ -3,8 +3,16 @@
 set -e
 set -x
 
-git clone -b ${DRONE_BRANCH} --single-branch ${DRONE_REMOTE_URL} \
-  ${DRONE_WORKSPACE}
+# git clone -b ${DRONE_BRANCH} --single-branch ${DRONE_REMOTE_URL} \
+#   ${DRONE_WORKSPACE}
+#
+# git fetch origin pull/${DRONE_PULL_REQUEST}/head:
+# git rebase ${DRONE_COMMIT}
+
+git init
+git remote add origin ${DRONE_REMOTE_URL}
+git fetch origin +refs/heads/${DRONE_BRANCH}:
+git checkout ${DRONE_BRANCH}
 
 git fetch origin pull/${DRONE_PULL_REQUEST}/head:
 git rebase ${DRONE_COMMIT}

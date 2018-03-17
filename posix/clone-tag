@@ -2,5 +2,17 @@
 set -e
 set -x
 
-git clone -b ${DRONE_TAG} --single-branch ${DRONE_REMOTE_URL} \
-  ${DRONE_WORKSPACE}
+git init
+git remote add origin ${DRONE_REMOTE_URL}
+git fetch origin +refs/tags/${DRONE_TAG}:
+git checkout -qf FETCH_HEAD
+
+#
+# this code is optimized for cloning a single
+# branch if the target directory is empty and
+# will use the tag as the branch name.
+#
+#
+# git clone --branch ${DRONE_TAG} --single-branch \
+#   ${DRONE_REMOTE_URL} ${DRONE_WORKSPACE}
+#
