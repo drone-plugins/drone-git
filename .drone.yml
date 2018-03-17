@@ -3,6 +3,7 @@ pipeline:
     image: golang
     commands:
       - cd posix
+      - tar -xf fixtures.tar -C /
       - go test -v
   publish:
     image: plugins/docker
