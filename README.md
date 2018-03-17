@@ -16,6 +16,7 @@ docker run --rm \
 -e DRONE_WORKSPACE=/data \
 -e DRONE_COMMIT=762941318ee16e59dabbacb1b4049eec22f0d303 \
 -e DRONE_BRANCH=master \
+-e PLUGIN_DEPTH=50 \
 plugins/git:next
 ```
 
@@ -55,6 +56,8 @@ docker run --rm \
 -e DRONE_PULL_REQUEST=14596 \
 -e DRONE_COMMIT=26923a8f37933ccc23943de0d4ebd53908268582 \
 -e DRONE_BRANCH=master \
+-e DRONE_COMMIT_REF="refs/pull/14596/merge" \
+-e PLUGIN_DEPTH=50 \
 plugins/git:next
 ```
 
@@ -71,6 +74,5 @@ pipeline: ...
 This plugin is a work-in-progress and does not support the following features and / or capabilities:
 
 * does not work with deployment events
-* does not support depth
-* only works with github pull requests (hard coded ref)
+* not verified with bitbucket, gogs, gitea or gitlab
 * cloning submodules is out of scope

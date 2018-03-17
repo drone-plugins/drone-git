@@ -1,4 +1,8 @@
 #!/bin/sh
+
+# This script creates a git repository and seeds with
+# commit history. Used by unit tests.
+
 set -e
 set -x
 
