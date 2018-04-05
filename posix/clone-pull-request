@@ -4,14 +4,17 @@
 REF="pull/${DRONE_PULL_REQUEST}/head"
 
 # pull request ref, bitbucket
-if [[ $DRONE_REMOTE_URL = "https://bitbucket.org/"* ]]; then
-	REF="refs/pull-requests/${DRONE_PULL_REQUEST}/from"
-fi
+case "$DRONE_REMOTE_URL" in
+    "https://bitbucket.org/"*) REF="refs/pull-requests/${DRONE_PULL_REQUEST}/from" ;;
+    *) ;;
+esac
 
 # pull request ref, gitlab
-if [[ $DRONE_COMMIT_REF = "refs/merge-requests/"* ]]; then
-	REF="refs/merge-requests/${DRONE_PULL_REQUEST}/head"
-fi
+# case being used because pattern matching in /bin/sh needs case.
+case "$DRONE_COMMIT_REF" in
+    "refs/merge-requests/"*) REF="refs/merge-requests/${DRONE_PULL_REQUEST}/head" ;;
+    *) ;;
+esac
 
 FLAGS=""
 if [[ ! -z "${PLUGIN_DEPTH}" ]]; then
