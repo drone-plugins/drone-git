@@ -1,5 +1,6 @@
 #!/bin/sh
 
+mkdir -p ${DRONE_WORKSPACE}
 cd ${DRONE_WORKSPACE}
 
 # if the netrc enviornment variables exist, write
