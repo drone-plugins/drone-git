@@ -1,4 +1,7 @@
-FROM microsoft/nanoserver:10.0.14393.1593
+# The nanoserver:1709 container does not come with powershell installed on it
+# so the powershell image should be used when requiring any commands to be run
+# to add to the image contents
+FROM microsoft/powershell:nanoserver
 MAINTAINER Drone.IO Community <drone-dev@googlegroups.com>
 
 LABEL org.label-schema.version=latest
@@ -7,15 +10,17 @@ LABEL org.label-schema.name="Drone Git"
 LABEL org.label-schema.vendor="Drone.IO Community"
 LABEL org.label-schema.schema-version="1.0"
 
-SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+# In the powershell container pwsh is the name of the command
+SHELL ["pwsh", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
-ENV GIT_VERSION 2.12.2
+ENV GIT_VERSION 2.17.1
 ENV GIT_BUILD 2
 ENV GIT_TAG v${GIT_VERSION}.windows.${GIT_BUILD}
-ENV GIT_DOWNLOAD_URL https://github.com/git-for-windows/git/releases/download/${GIT_TAG}/MinGit-${GIT_VERSION}.${GIT_BUILD}-64-bit.zip
-ENV GIT_DOWNLOAD_SHA256 3918cd9ab42c9a22aa3934463fdb536485c84e6876e9aaab74003deb43a08a36
+ENV GIT_DOWNLOAD_URL https://github.com/git-for-windows/git/releases/download/${GIT_TAG}/MinGit-${GIT_VERSION}.${GIT_BUILD}-busybox-64-bit.zip
+ENV GIT_DOWNLOAD_SHA256 f3aa489a67a600aefa8f20ee55f8977319bd3da568afaaadcd1b2e2cf21c575c
 
 RUN Write-Host ('Downloading {0} ...' -f $env:GIT_DOWNLOAD_URL); \
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; \
 	Invoke-WebRequest -Uri $env:GIT_DOWNLOAD_URL -OutFile 'git.zip'; \
 	\
 	Write-Host ('Verifying sha256 ({0}) ...' -f $env:GIT_DOWNLOAD_SHA256); \
@@ -32,12 +37,16 @@ RUN Write-Host ('Downloading {0} ...' -f $env:GIT_DOWNLOAD_URL); \
 	\
 	Write-Host 'Updating PATH ...'; \
 	$env:PATH = 'C:\git\cmd;C:\git\mingw64\bin;C:\git\usr\bin;' + $env:PATH; \
-  Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH -Value $env:PATH; \
 	\
 	Write-Host 'Verifying install ...'; \
 	Write-Host '  git --version'; git --version; \
 	\
 	Write-Host 'Complete.';
 
+# The machine's path cannot be modified in nanoserver's powershell. This is a
+# workaround to ensure that the container when spun up has git on its path.
+ENV PATH="C:\git\cmd;C:\git\mingw64\bin;C:\git\usr\bin;${PATH}"
+
 ADD drone-git.exe /drone-git.exe
+
 ENTRYPOINT [ "\\drone-git.exe" ]
