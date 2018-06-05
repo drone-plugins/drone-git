@@ -18,7 +18,7 @@ build_script:
   - cmd: |
       go build -v -ldflags "-X main.build=%APPVEYOR_BUILD_VERSION%"" -a -o drone-git.exe
 
-      docker pull microsoft/nanoserver:10.0.14393.1593
+      docker pull microsoft/powershell:nanoserver
       docker build -f Dockerfile.windows -t plugins/git:windows .
 
 test_script:
