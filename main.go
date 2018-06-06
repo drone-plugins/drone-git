@@ -47,6 +47,11 @@ func main() {
 			EnvVar: "DRONE_BUILD_EVENT",
 		},
 		cli.StringFlag{
+			Name:   "private-ssh-key",
+			Usage:  "private ssh key",
+			EnvVar: "DRONE_PRIVATE_SSH_KEY",
+		},
+		cli.StringFlag{
 			Name:   "netrc.machine",
 			Usage:  "netrc machine",
 			EnvVar: "DRONE_NETRC_MACHINE",
@@ -135,6 +140,9 @@ func run(c *cli.Context) error {
 			Login:    c.String("netrc.username"),
 			Machine:  c.String("netrc.machine"),
 			Password: c.String("netrc.password"),
+		},
+		Ssh: Ssh{
+			PrivateKey: c.String("private-ssh-key"),
 		},
 		Config: Config{
 			Depth:           c.Int("depth"),
