@@ -24,6 +24,10 @@ type (
 		Password string
 	}
 
+	Ssh struct {
+		PrivateKey string
+	}
+
 	Config struct {
 		Depth           int
 		Recursive       bool

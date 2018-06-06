@@ -15,6 +15,7 @@ type Plugin struct {
 	Repo    Repo
 	Build   Build
 	Netrc   Netrc
+	Ssh     Ssh
 	Config  Config
 	Backoff Backoff
 }
@@ -27,9 +28,16 @@ func (p Plugin) Exec() error {
 		}
 	}
 
-	err := writeNetrc(p.Netrc.Machine, p.Netrc.Login, p.Netrc.Password)
-	if err != nil {
-		return err
+	if p.Ssh.PrivateKey != "" {
+		err := writeSshKey(p.Ssh.PrivateKey)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := writeNetrc(p.Netrc.Machine, p.Netrc.Login, p.Netrc.Password)
+		if err != nil {
+			return err
+		}
 	}
 
 	var cmds []*exec.Cmd

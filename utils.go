@@ -66,3 +66,25 @@ machine %s
 login %s
 password %s
 `
+
+// helper function to write specified private SSH key
+func writeSshKey(key string) error {
+	if key == "" {
+		return nil
+	}
+	out := fmt.Sprintf(key)
+
+	home := "/root"
+	u, err := user.Current()
+	if err == nil {
+		home = u.HomeDir
+	}
+	sshpath := filepath.Join(home, ".ssh")
+	if err := os.MkdirAll(sshpath, 0700); err != nil {
+		return err
+	}
+	confpath := filepath.Join(sshpath, "config")
+	privpath := filepath.Join(sshpath, "id_rsa")
+	ioutil.WriteFile(confpath, []byte("StrictHostKeyChecking no\n"), 0700)
+	return ioutil.WriteFile(privpath, []byte(out), 0600)
+}
