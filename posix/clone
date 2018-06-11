@@ -1,7 +1,7 @@
 #!/bin/sh
 
 sudo mkdir -p ${DRONE_WORKSPACE}
-sudo chown drone:drone ${DRONE_WORKSPACE}
+[ "${CI}" = "drone" ] && sudo chown drone:drone ${DRONE_WORKSPACE}
 cd ${DRONE_WORKSPACE}
 
 # if the netrc enviornment variables exist, write
