@@ -1,7 +1,11 @@
 #!/bin/sh
 
-sudo mkdir -p ${DRONE_WORKSPACE}
-[ -n "${CI}" ] && sudo chown drone:drone ${DRONE_WORKSPACE}
+if [[ -n "${CI}" ]]; then
+	sudo mkdir -p ${DRONE_WORKSPACE}
+	sudo chown drone:drone ${DRONE_WORKSPACE}
+else
+	mkdir -p ${DRONE_WORKSPACE}
+fi
 cd ${DRONE_WORKSPACE}
 
 # if the netrc enviornment variables exist, write
