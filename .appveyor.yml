@@ -32,6 +32,6 @@ deploy_script:
       if ( $env:APPVEYOR_PULL_REQUEST_NUMBER -Or ! $env:APPVEYOR_REPO_BRANCH.Equals("master")) {
         Write-Host Nothing to deploy.
       } else {
-        docker login --username $env:DOCKER_USERNAME --password $env:DOCKER_PASSWORD
+        echo $env:DOCKER_PASSWORD | docker login --username $env:DOCKER_USERNAME --password-stdin
         docker push plugins/git:windows
       }
