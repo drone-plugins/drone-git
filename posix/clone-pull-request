@@ -34,7 +34,7 @@ git fetch ${FLAGS} origin +refs/heads/${DRONE_BRANCH}:
 git checkout ${DRONE_BRANCH}
 
 git fetch origin ${REF}:
-git rebase ${DRONE_COMMIT}
+git merge ${DRONE_COMMIT}
 
 # git clone ${FLAGS} -b ${DRONE_BRANCH} --single-branch ${DRONE_REMOTE_URL} \
 #   ${DRONE_WORKSPACE}
