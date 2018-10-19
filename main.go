@@ -10,14 +10,17 @@ import (
 	"github.com/urfave/cli"
 )
 
-var build = "0" // build number set at compile-time
+var (
+	version = "0.0.0"
+	build   = "0"
+)
 
 func main() {
 	app := cli.NewApp()
 	app.Name = "git plugin"
 	app.Usage = "git plugin"
+	app.Version = fmt.Sprintf("%s+%s", version, build)
 	app.Action = run
-	app.Version = fmt.Sprintf("1.1.%s", build)
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:   "remote",

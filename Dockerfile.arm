@@ -1,13 +1,11 @@
 FROM plugins/base:arm
-MAINTAINER Drone.IO Community <drone-dev@googlegroups.com>
 
-LABEL org.label-schema.version=latest
-LABEL org.label-schema.vcs-url="https://github.com/drone-plugins/drone-git.git"
-LABEL org.label-schema.name="Drone Git"
-LABEL org.label-schema.vendor="Drone.IO Community"
-LABEL org.label-schema.schema-version="1.0"
+LABEL maintainer="Drone.IO Community <drone-dev@googlegroups.com>" \
+  org.label-schema.name="Drone Git" \
+  org.label-schema.vendor="Drone.IO Community" \
+  org.label-schema.schema-version="1.0"
 
-RUN apk add --no-cache ca-certificates git openssh curl perl
+RUN apk add --no-cache git openssh curl perl
 
 ADD release/linux/arm/drone-git /bin/
 ENTRYPOINT ["/bin/drone-git"]

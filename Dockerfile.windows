@@ -1,43 +1,18 @@
+# escape=`
 FROM microsoft/nanoserver:10.0.14393.1593
-MAINTAINER Drone.IO Community <drone-dev@googlegroups.com>
 
-LABEL org.label-schema.version=latest
-LABEL org.label-schema.vcs-url="https://github.com/drone-plugins/drone-git.git"
-LABEL org.label-schema.name="Drone Git"
-LABEL org.label-schema.vendor="Drone.IO Community"
-LABEL org.label-schema.schema-version="1.0"
+LABEL maintainer="Drone.IO Community <drone-dev@googlegroups.com>" `
+  org.label-schema.name="Drone Git" `
+  org.label-schema.vendor="Drone.IO Community" `
+  org.label-schema.schema-version="1.0"
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
-ENV GIT_VERSION 2.12.2
-ENV GIT_BUILD 2
-ENV GIT_TAG v${GIT_VERSION}.windows.${GIT_BUILD}
-ENV GIT_DOWNLOAD_URL https://github.com/git-for-windows/git/releases/download/${GIT_TAG}/MinGit-${GIT_VERSION}.${GIT_BUILD}-64-bit.zip
-ENV GIT_DOWNLOAD_SHA256 3918cd9ab42c9a22aa3934463fdb536485c84e6876e9aaab74003deb43a08a36
+RUN Invoke-WebRequest 'https://github.com/git-for-windows/git/releases/download/v2.12.2.windows.2/MinGit-2.12.2.2-64-bit.zip' -OutFile 'git.zip'; `
+  Expand-Archive -Path git.zip -DestinationPath c:\git\ -Force; `
+  $env:PATH = 'c:\git\cmd;c:\git\mingw64\bin;c:\git\usr\bin;{0}' -f $env:PATH; `
+  Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment\' -Name Path -Value $env:PATH; `
+  Remove-Item -Path git.zip;
 
-RUN Write-Host ('Downloading {0} ...' -f $env:GIT_DOWNLOAD_URL); \
-	Invoke-WebRequest -Uri $env:GIT_DOWNLOAD_URL -OutFile 'git.zip'; \
-	\
-	Write-Host ('Verifying sha256 ({0}) ...' -f $env:GIT_DOWNLOAD_SHA256); \
-	if ((Get-FileHash git.zip -Algorithm sha256).Hash -ne $env:GIT_DOWNLOAD_SHA256) { \
-		Write-Host 'FAILED!'; \
-		exit 1; \
-	}; \
-	\
-	Write-Host 'Expanding ...'; \
-	Expand-Archive -Path git.zip -DestinationPath C:\git\.; \
-	\
-	Write-Host 'Removing ...'; \
-	Remove-Item git.zip -Force; \
-	\
-	Write-Host 'Updating PATH ...'; \
-	$env:PATH = 'C:\git\cmd;C:\git\mingw64\bin;C:\git\usr\bin;' + $env:PATH; \
-  Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH -Value $env:PATH; \
-	\
-	Write-Host 'Verifying install ...'; \
-	Write-Host '  git --version'; git --version; \
-	\
-	Write-Host 'Complete.';
-
-ADD drone-git.exe /drone-git.exe
-ENTRYPOINT [ "\\drone-git.exe" ]
+ADD release\drone-git.exe c:\drone-git.exe
+ENTRYPOINT [ "c:\\drone-git.exe" ]
