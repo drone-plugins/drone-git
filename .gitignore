@@ -22,7 +22,9 @@ _testmain.go
 *.exe
 *.test
 *.prof
-.env
+
+release/
+vendor/
 
 coverage.out
 drone-git

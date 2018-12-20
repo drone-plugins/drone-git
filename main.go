@@ -3,41 +3,45 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/joho/godotenv"
 	"github.com/urfave/cli"
 )
 
-var build = "0" // build number set at compile-time
+var (
+	version = "0.0.0"
+	build   = "0"
+)
 
 func main() {
 	app := cli.NewApp()
 	app.Name = "git plugin"
 	app.Usage = "git plugin"
+	app.Version = fmt.Sprintf("%s+%s", version, build)
 	app.Action = run
-	app.Version = fmt.Sprintf("1.1.%s", build)
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:   "remote",
 			Usage:  "git remote url",
-			EnvVar: "DRONE_REMOTE_URL",
+			EnvVar: "PLUGIN_REMOTE,DRONE_REMOTE_URL",
 		},
 		cli.StringFlag{
 			Name:   "path",
 			Usage:  "git clone path",
-			EnvVar: "DRONE_WORKSPACE",
+			EnvVar: "PLUGIN_PATH,DRONE_WORKSPACE",
 		},
 		cli.StringFlag{
 			Name:   "sha",
 			Usage:  "git commit sha",
-			EnvVar: "DRONE_COMMIT_SHA",
+			EnvVar: "PLUGIN_SHA,DRONE_COMMIT_SHA",
 		},
 		cli.StringFlag{
 			Name:   "ref",
 			Value:  "refs/heads/master",
 			Usage:  "git commit ref",
-			EnvVar: "DRONE_COMMIT_REF",
+			EnvVar: "PLUGIN_REF,DRONE_COMMIT_REF",
 		},
 		cli.StringFlag{
 			Name:   "event",
@@ -96,6 +100,18 @@ func main() {
 			EnvVar: "PLUGIN_SUBMODULE_OVERRIDE",
 			Value:  &MapFlag{},
 		},
+		cli.DurationFlag{
+			Name:   "backoff",
+			Usage:  "backoff duration",
+			EnvVar: "PLUGIN_BACKOFF",
+			Value:  5 * time.Second,
+		},
+		cli.IntFlag{
+			Name:   "backoff-attempts",
+			Usage:  "backoff attempts",
+			EnvVar: "PLUGIN_ATTEMPTS",
+			Value:  5,
+		},
 		cli.StringFlag{
 			Name:  "env-file",
 			Usage: "source env file",
@@ -136,6 +152,10 @@ func run(c *cli.Context) error {
 			SkipVerify:      c.Bool("skip-verify"),
 			SubmoduleRemote: c.Bool("submodule-update-remote"),
 			Submodules:      c.Generic("submodule-override").(*MapFlag).Get(),
+		},
+		Backoff: Backoff{
+			Attempts: c.Int("backoff-attempts"),
+			Duration: c.Duration("backoff"),
 		},
 	}
 

@@ -1,30 +1,148 @@
 workspace:
   base: /go
+  path: src/github.com/drone-plugins/drone-git
 
 pipeline:
+  deps:
+    image: golang:1.10
+    pull: true
+    commands:
+      - go get -u github.com/golang/dep/cmd/dep
+      - dep ensure
+
   test:
-    image: golang:1.6
+    image: golang:1.10
+    pull: true
+    commands:
+      - go vet ./...
+      - go test -cover ./...
+
+  build_linux_amd64:
+    image: golang:1.10
+    pull: true
+    group: build
     environment:
+      - GOOS=linux
+      - GOARCH=amd64
       - CGO_ENABLED=0
     commands:
-      - go vet
-      - go test -cover -coverprofile=coverage.out
-      - go build -ldflags "-s -w -X main.build=$DRONE_BUILD_NUMBER" -a -tags netgo
+      - |
+        if test "${DRONE_TAG}" = ""; then
+          go build -v -ldflags "-X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/amd64/drone-git
+        else
+          go build -v -ldflags "-X main.version=${DRONE_TAG##v} -X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/amd64/drone-git
+        fi
 
-  publish:
-    image: plugins/docker
+  # build_linux_i386:
+  #   image: golang:1.10
+  #   pull: true
+  #   group: build
+  #   environment:
+  #     - GOOS=linux
+  #     - GOARCH=386
+  #     - CGO_ENABLED=0
+  #   commands:
+  #     - |
+  #       if test "${DRONE_TAG}" = ""; then
+  #         go build -v -ldflags "-X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/i386/drone-git
+  #       else
+  #         go build -v -ldflags "-X main.version=${DRONE_TAG##v} -X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/i386/drone-git
+  #       fi
+
+  # build_linux_arm64:
+  #   image: golang:1.10
+  #   pull: true
+  #   group: build
+  #   environment:
+  #     - GOOS=linux
+  #     - GOARCH=arm64
+  #     - CGO_ENABLED=0
+  #   commands:
+  #     - |
+  #       if test "${DRONE_TAG}" = ""; then
+  #         go build -v -ldflags "-X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/arm64/drone-git
+  #       else
+  #         go build -v -ldflags "-X main.version=${DRONE_TAG##v} -X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/arm64/drone-git
+  #       fi
+
+  # build_linux_arm:
+  #   image: golang:1.10
+  #   pull: true
+  #   group: build
+  #   environment:
+  #     - GOOS=linux
+  #     - GOARCH=arm
+  #     - CGO_ENABLED=0
+  #     - GOARM=7
+  #   commands:
+  #     - |
+  #       if test "${DRONE_TAG}" = ""; then
+  #         go build -v -ldflags "-X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/arm/drone-git
+  #       else
+  #         go build -v -ldflags "-X main.version=${DRONE_TAG##v} -X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/arm/drone-git
+  #       fi
+
+  publish_linux_amd64:
+    image: plugins/docker:17.12
+    pull: true
+    secrets: [ docker_username, docker_password ]
+    group: docker
     repo: plugins/git
-    tags: [ "latest", "1.1", "1" ]
+    auto_tag: true
+    auto_tag_suffix: linux-amd64
+    dockerfile: Dockerfile
     when:
-      branch: master
-      event: push
+      event: [ push, tag ]
 
-plugin:
-  name: Git
-  desc: Clones a git repository
-  type: clone
-  image: plugins/git
-  labels:
-    - scm
-    - vcs
-    - git
+  # publish_linux_i386:
+  #   image: plugins/docker:17.12
+  #   pull: true
+  #   secrets: [ docker_username, docker_password ]
+  #   group: docker
+  #   repo: plugins/git
+  #   auto_tag: true
+  #   auto_tag_suffix: linux-i386
+  #   dockerfile: Dockerfile.i386
+  #   when:
+  #     event: [ push, tag ]
+
+  # publish_linux_arm64:
+  #   image: plugins/docker:17.12
+  #   pull: true
+  #   secrets: [ docker_username, docker_password ]
+  #   group: docker
+  #   repo: plugins/git
+  #   auto_tag: true
+  #   auto_tag_suffix: linux-arm64
+  #   dockerfile: Dockerfile.arm64
+  #   when:
+  #     event: [ push, tag ]
+
+  # publish_linux_arm:
+  #   image: plugins/docker:17.12
+  #   pull: true
+  #   secrets: [ docker_username, docker_password ]
+  #   group: docker
+  #   repo: plugins/git
+  #   auto_tag: true
+  #   auto_tag_suffix: linux-arm
+  #   dockerfile: Dockerfile.arm
+  #   when:
+  #     event: [ push, tag ]
+
+  manifests:
+    image: plugins/manifest:1
+    pull: true
+    secrets: [ docker_username, docker_password ]
+    spec: manifest.tmpl
+    auto_tag: true
+    ignore_missing: true
+    when:
+      event: [ push, tag ]
+
+  microbadger:
+    image: plugins/webhook:1
+    pull: true
+    secrets: [ webhook_url ]
+    when:
+      status: [ success ]

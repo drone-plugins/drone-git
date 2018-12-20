@@ -1,6 +1,9 @@
 package main
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"time"
+)
 
 type (
 	Repo struct {
@@ -29,6 +32,11 @@ type (
 		Tags            bool
 		Submodules      map[string]string
 		SubmoduleRemote bool
+	}
+
+	Backoff struct {
+		Attempts int
+		Duration time.Duration
 	}
 )
 
