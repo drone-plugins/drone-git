@@ -110,6 +110,7 @@ func main() {
 		cli.StringFlag{
 			Name:  "env-file",
 			Usage: "source env file",
+			EnvVar: "PLUGIN_ENV_FILE",
 		},
 	}
 
