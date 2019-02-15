@@ -12,26 +12,33 @@ Drone plugin to clone `git` repositories. For the usage information and a listin
 
 ## Build
 
-Build the binary with the following commands:
+Build the binary with the following command:
 
-```
-go build
+```console
+export GOOS=linux
+export GOARCH=amd64
+export CGO_ENABLED=0
+export GO111MODULE=on
+
+go build -v -a -tags netgo -o release/linux/amd64/drone-git
 ```
 
 ## Docker
 
-Build the Docker image with the following commands:
+Build the Docker image with the following command:
 
-```
-GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -tags netgo -o release/linux/amd64/drone-git
-docker build --rm -t plugins/git .
+```console
+docker build \
+  --label org.label-schema.build-date=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
+  --label org.label-schema.vcs-ref=$(git rev-parse --short HEAD) \
+  --file docker/Dockerfile.linux.amd64 --tag plugins/git .
 ```
 
 ## Usage
 
 Clone a commit:
 
-```
+```console
 docker run --rm \
   -e DRONE_REMOTE_URL=https://github.com/garyburd/redigo.git \
   -e DRONE_WORKSPACE=/go/src/github.com/garyburd/redigo \
@@ -43,7 +50,7 @@ docker run --rm \
 
 Clone a pull request:
 
-```
+```console
 docker run --rm \
   -e DRONE_REMOTE_URL=https://github.com/garyburd/redigo.git \
   -e DRONE_WORKSPACE=/go/src/github.com/garyburd/redigo \
@@ -55,7 +62,7 @@ docker run --rm \
 
 Clone a tag:
 
-```
+```console
 docker run --rm \
   -e DRONE_REMOTE_URL=https://github.com/garyburd/redigo.git \
   -e DRONE_WORKSPACE=/go/src/github.com/garyburd/redigo \
