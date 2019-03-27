@@ -1,5 +1,5 @@
 # escape=`
-FROM plugins/base:windows-amd64
+FROM plugins/base:windows-1809
 
 LABEL maintainer="Drone.IO Community <drone-dev@googlegroups.com>" `
   org.label-schema.name="Drone Git" `
@@ -10,7 +10,7 @@ RUN Invoke-WebRequest 'https://github.com/git-for-windows/git/releases/download/
   Expand-Archive -Path git.zip -DestinationPath c:\git\ -Force; `
   $env:PATH = 'c:\git\cmd;c:\git\mingw64\bin;c:\git\usr\bin;{0}' -f $env:PATH; `
   Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment\' -Name Path -Value $env:PATH; `
-  Remove-Item -Path git.zip;
+  Remove-Item -Path git.zip
 
-ADD release\drone-git.exe c:\drone-git.exe
-ENTRYPOINT [ "c:\\drone-git.exe" ]
+ADD release/windows/amd64/drone-git.exe C:/bin/drone-git.exe
+ENTRYPOINT [ "C:\\bin\\drone-git.exe" ]
