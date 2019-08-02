@@ -43,6 +43,11 @@ func (p Plugin) Exec() error {
 		cmds = append(cmds, remote(p.Repo.Clone))
 	}
 
+	for k, v := range p.Config.GitConfigs {
+		c := config(k, v)
+		cmds = append(cmds, c)
+	}
+
 	switch {
 	case isPullRequest(p.Build.Event) || isTag(p.Build.Event, p.Build.Ref):
 		cmds = append(cmds, fetch(p.Build.Ref, p.Config.Tags, p.Config.Depth))
@@ -115,6 +120,17 @@ func initGit() *exec.Cmd {
 	return exec.Command(
 		"git",
 		"init",
+	)
+}
+
+// Configure the git repo
+func config(k, v string) *exec.Cmd {
+	return exec.Command(
+		"git",
+		"config",
+		"--global",
+		k,
+		v,
 	)
 }
 

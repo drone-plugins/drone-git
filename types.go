@@ -31,6 +31,7 @@ type (
 		Tags            bool
 		Submodules      map[string]string
 		SubmoduleRemote bool
+		GitConfigs      map[string]string
 	}
 
 	Backoff struct {
