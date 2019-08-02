@@ -150,6 +150,7 @@ func run(c *cli.Context) error {
 			SkipVerify:      c.Bool("skip-verify"),
 			SubmoduleRemote: c.Bool("submodule-update-remote"),
 			Submodules:      c.Generic("submodule-override").(*MapFlag).Get(),
+			GitConfigs:      make(map[string]string),
 		},
 		Backoff: Backoff{
 			Attempts: c.Int("backoff-attempts"),
