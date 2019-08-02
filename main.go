@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -109,6 +110,11 @@ func main() {
 			Name:  "env-file",
 			Usage: "source env file",
 		},
+		cli.StringSliceFlag{
+			Name:   "git-configs",
+			Usage:  "git config's key-value pairs",
+			EnvVar: "PLUGIN_GIT_CONFIGS",
+		},
 	}
 
 	if err := app.Run(os.Args); err != nil {
@@ -149,6 +155,14 @@ func run(c *cli.Context) error {
 			Attempts: c.Int("backoff-attempts"),
 			Duration: c.Duration("backoff"),
 		},
+	}
+
+	for _, s := range c.StringSlice("git-configs") {
+		z := strings.SplitN(s, "=", 2)
+		if len(z) != 2 {
+			continue
+		}
+		plugin.Config.GitConfigs[z[0]] = z[1]
 	}
 
 	return plugin.Exec()
