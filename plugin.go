@@ -44,8 +44,7 @@ func (p Plugin) Exec() error {
 	}
 
 	for k, v := range p.Config.GitConfigs {
-		c := config(k, v)
-		cmds = append(cmds, c)
+		cmds = append(cmds, config(k, v))
 	}
 
 	switch {
